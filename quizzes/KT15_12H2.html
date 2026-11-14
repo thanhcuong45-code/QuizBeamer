@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CauHoi</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 15px; line-height: 1.6; padding-top: 70px; overflow-x: hidden; background: #f7fbff; }
+        .header-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e88e5; color: white; padding: 10px 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; box-shadow: 0 2px 6px rgba(30,136,229,0.2); }
+        .header-bar h2 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        #timer { font-size: 16px; font-weight: bold; background: #e53935; padding: 5px 10px; border-radius: 4px; white-space: nowrap; }
+        
+        .zalo-warning { background: #eef6fc; color: #1565c0; padding: 10px; border: 1px solid #b3d4fc; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: justify; font-size: 14px; }
+        
+        h3 { color: #1565c0; border-bottom: 2px solid #b3d4fc; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; font-size: 18px; }
+        .info-group { margin-bottom: 15px; }
+        .info-group input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; background: #fff; }
+        .info-group input:focus { border-color: #1e88e5; outline: none; box-shadow: 0 0 0 3px rgba(30,136,229,0.12); }
+        
+        .question { background: #eef6fc; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #b3d4fc; box-sizing: border-box; width: 100%; overflow-x: auto; }
+        .question-text { margin-bottom: 15px; word-wrap: break-word; } 
+        
+        mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+        
+        .options label { display: block; padding: 10px; margin: 8px 0; background: #ffffff; border: 1px solid #b3d4fc; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .options label:hover { background: #e3f0fb; border-color: #1e88e5; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0; }
+        .tf-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 320px; }
+        .tf-table td { padding: 10px; border: 1px solid #b3d4fc; }
+        .tf-radio-group { display: flex; gap: 10px; justify-content: center; }
+        .tf-radio-group label { cursor: pointer; font-weight: bold; padding: 5px; border-radius: 3px; transition: 0.3s; }
+        
+        .short-ans-group { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .short-ans-box { width: 50px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #1e88e5; border-radius: 5px; box-sizing: border-box; font-weight: bold; color: #1565c0; background: #fff; transition: 0.3s; }
+        .short-ans-box:focus { border-color: #0d47a1; outline: none; box-shadow: 0 0 6px rgba(30,136,229,0.3); }
+        
+        .essay-input { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #b3d4fc; border-radius: 4px; box-sizing: border-box; height: 150px; resize: vertical; background: #fff; }
+        .essay-input:focus { border-color: #1e88e5; outline: none; }
+        
+        .solution-box { display: none; margin-top: 15px; padding: 15px; background: #e8f4fc; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
+        
+        button.submit-btn { width: 100%; padding: 15px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 18px; cursor: pointer; margin-top: 15px; font-weight: bold; margin-bottom: 5px; }
+        button.submit-btn:hover { background: #1565c0; }
+        #result { display: none; margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 18px; background: #eef6fc; color: #0d47a1; border: 1px solid #b3d4fc; margin-bottom: 20px;}
+        
+        #passwordPrompt { display: none; margin-top: 20px; padding: 20px; background: #eef6fc; border: 1px solid #b3d4fc; border-radius: 5px; text-align: center; margin-bottom: 40px; }
+        #passwordPrompt h4 { color: #1565c0; margin-top: 0; margin-bottom: 10px; }
+        #passwordPrompt input { padding: 10px; width: 60%; max-width: 250px; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; }
+        #passwordPrompt button { width: auto; padding: 10px 20px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; margin-left: 10px; }
+        
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+        /* .table-responsive do TeX2HTML tạo ra: trước đây chỉ mẫu làm bài có CSS này nên bảng rộng bị tràn ở trình chiếu / luyện tập */
+        .table-responsive { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 15px 0; }
+        /* --- BẢNG RỘNG TRÊN ĐIỆN THOẠI: gợi ý vuốt ngang, cột đầu cố định, xem toàn màn hình --- */
+        .tbl-box { position: relative; margin: 12px 0; max-width: 100%; min-width: 0; }
+        .tbl-box > .tbl-wrap { position: relative; }
+        .tbl-box .table-responsive, .tbl-box .table-scroll { margin: 0; }
+        .tbl-hint { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-size: 12.5px; color: #5f7b94; }
+        .tbl-box.has-scroll > .tbl-hint { display: flex; }
+        .tbl-open { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--zoom-border); background: var(--zoom-bar-bg); color: var(--zoom-accent-hover); cursor: pointer; white-space: nowrap; }
+        .tbl-fade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; pointer-events: none; background: linear-gradient(to right, rgba(255,255,255,0), rgba(120,140,160,.28)); }
+        .tbl-box.has-scroll:not(.at-end) .tbl-fade { display: block; }
+        .tbl-box.has-scroll table.sticky-first tr > :first-child { position: sticky; left: 0; z-index: 2; background: #fff; box-shadow: 2px 0 4px -2px rgba(0,0,0,.35); }
+        @media (max-width: 600px) {
+            .tbl-box td, .tbl-box th { font-size: 14px; padding: 4px 7px !important; }
+        }
+        #tblOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; flex-direction: column; }
+        #tblOverlay.open { display: flex; }
+        .tbl-ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--zoom-bar-bg); border-bottom: 1px solid var(--zoom-border); }
+        .tbl-ov-bar .ttl { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; color: #333; }
+        .tbl-ov-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px; touch-action: pan-x pan-y; }
+        .tbl-ov-body table { margin: 0; width: auto; max-width: none; border-collapse: collapse; font-size: calc(15px * var(--tbl-s, 1)); }
+        .tbl-ov-body td, .tbl-ov-body th { font-size: inherit !important; padding: 5px 9px; }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        /* Huy hiệu mức độ khó (suy ra từ ID câu hỏi, HTML bài giảng) */
+        .lvl { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: bold; line-height: 1.6; white-space: nowrap; vertical-align: middle; cursor: help; }
+        .lvl .dots { letter-spacing: 1px; margin-right: 4px; }
+        .lvl.lv1 { background: #e6f4ea; border-color: #34a853; color: #1b6b32; }
+        .lvl.lv2 { background: #e3f0fb; border-color: #4a90d9; color: #0d47a1; }
+        .lvl.lv3 { background: #fff3e0; border-color: #fb8c00; color: #8a4b00; }
+        .lvl.lv4 { background: #fdeaea; border-color: #e53935; color: #a31515; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+        .tex-fa { margin: 0 .25em; font-style: normal; }
+
+
+
+        .author-footer { margin: 30px 0 10px; padding-top: 10px; border-top: 1px solid #b3d4fc; text-align: center; color: #5f7b94; font-size: 13px; }
+        .author-footer:empty { display: none; }
+    </style>
+    
+    <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true,
+            macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1]}
+          },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <h2>CauHoi</h2>
+        <div id="timer">Đang tải...</div>
+    </div>
+    
+    <div class="zalo-warning" id="zaloWarning">
+        ⚠️ CHÚ Ý: Nếu em đang mở bài này trực tiếp trên Zalo/Messenger, hãy bấm vào biểu tượng "Dấu 3 chấm" ở góc phải màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari) để không bị lỗi kết nối.
+    </div>
+
+    <div class="info-group">
+        <label>Họ và tên học sinh:</label>
+        <input type="text" id="studentName" placeholder="Nhập họ và tên..." required>
+    </div>
+    <div class="info-group">
+        <label>Lớp:</label>
+        <input type="text" id="studentClass" placeholder="Nhập lớp..." required>
+    </div>
+
+    <hr>
+    <form id="quizForm" onsubmit="return false;">
+        <h3>PHẦN 1. Câu trắc nghiệm nhiều phương án lựa chọn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Trong không gian $Oxyz$, cho hai điểm $A(2; 1; -1)$ và $B(1; 3; -4)$. Tọa độ của vectơ $\overrightarrow{AB}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_1" value="A"> <b>A.</b> $\overrightarrow{AB} = (3; 4; -5)$</label><label><input type="radio" name="P1_Cau_1" value="B"> <b>B.</b> $\overrightarrow{AB} = (-1; 2; -3)$</label><label><input type="radio" name="P1_Cau_1" value="C"> <b>C.</b> $\overrightarrow{AB} = (1; -2; 3)$</label><label><input type="radio" name="P1_Cau_1" value="D"> <b>D.</b> $\overrightarrow{AB} = (-1; -2; -3)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Lấy tọa độ điểm cuối trừ tọa độ điểm đầu tương ứng: $x = 1 - 2 = -1$; $y = 3 - 1 = 2$; $z = -4 - (-1) = -3$.</li></ul> <b>Vậy</b> Vectơ $\overrightarrow{AB} = (-1; 2; -3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Trong không gian $Oxyz$, cho điểm $M(x; y; z)$. Khẳng định nào sau đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_2" value="A"> <b>A.</b> $\overrightarrow{OM} = x\overrightarrow{i} + z\overrightarrow{j} + y\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_2" value="B"> <b>B.</b> $\overrightarrow{OM} = y\overrightarrow{i} + x\overrightarrow{j} + z\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_2" value="C"> <b>C.</b> $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_2" value="D"> <b>D.</b> $\overrightarrow{OM} = z\overrightarrow{i} + y\overrightarrow{j} + x\overrightarrow{k}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Theo định nghĩa tọa độ điểm trong hệ tọa độ $Oxyz$, tọa độ của điểm $M$ chính là tọa độ của vectơ vị trí $\overrightarrow{OM}$.</li><li>Biểu diễn qua các vectơ đơn vị: $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$.</li></ul> <b>Vậy</b> Khẳng định đúng là $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{u} = (x; y; z)$. Độ dài của vectơ $\overrightarrow{u}$ được tính theo công thức nào sau đây?</div></div><div class="options"><label><input type="radio" name="P1_Cau_3" value="A"> <b>A.</b> $|\overrightarrow{u}| = x^2 + y^2 + z^2$</label><label><input type="radio" name="P1_Cau_3" value="B"> <b>B.</b> $|\overrightarrow{u}| = \sqrt{x^2 + y^2 + z^2}$</label><label><input type="radio" name="P1_Cau_3" value="C"> <b>C.</b> $|\overrightarrow{u}| = \sqrt{x + y + z}$</label><label><input type="radio" name="P1_Cau_3" value="D"> <b>D.</b> $|\overrightarrow{u}| = |x| + |y| + |z|$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Độ dài của một vectơ bằng căn bậc hai số học của tổng bình phương các tọa độ của vectơ đó.</li></ul> <b>Vậy</b> Công thức đúng là $|\overrightarrow{u}| = \sqrt{x^2 + y^2 + z^2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Trong không gian $Oxyz$, cho hai điểm $A(1; 2; -3)$ và $B(3; -2; 1)$. Tọa độ trung điểm $M$ của đoạn thẳng $AB$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_4" value="A"> <b>A.</b> $M(4; 0; -2)$</label><label><input type="radio" name="P1_Cau_4" value="B"> <b>B.</b> $M(1; -2; 2)$</label><label><input type="radio" name="P1_Cau_4" value="C"> <b>C.</b> $M(2; 0; -1)$</label><label><input type="radio" name="P1_Cau_4" value="D"> <b>D.</b> $M(2; 0; -2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức tọa độ trung điểm: $x_M = \dfrac{1 + 3}{2} = 2$; $y_M = \dfrac{2 + (-2)}{2} = 0$; $z_M = \dfrac{-3 + 1}{2} = -1$.</li></ul> <b>Vậy</b> Tọa độ điểm $M$ là $M(2; 0; -1)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Trong không gian $Oxyz$, hình chiếu vuông góc của điểm $A(2; -3; 5)$ lên mặt phẳng $(Oxy)$ có tọa độ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_5" value="A"> <b>A.</b> $(0; 0; 5)$</label><label><input type="radio" name="P1_Cau_5" value="B"> <b>B.</b> $(2; 0; 5)$</label><label><input type="radio" name="P1_Cau_5" value="C"> <b>C.</b> $(0; -3; 5)$</label><label><input type="radio" name="P1_Cau_5" value="D"> <b>D.</b> $(2; -3; 0)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Chiếu vuông góc lên mặt phẳng $(Oxy)$ thì cao độ $z = 0$, giữ nguyên hoành độ và tung độ.</li></ul> <b>Vậy</b> Hình chiếu vuông góc của $A$ lên $(Oxy)$ là $(2; -3; 0)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{u} = 3\overrightarrow{i} - 5\overrightarrow{j} + 2\overrightarrow{k}$. Tọa độ của vectơ $\overrightarrow{u}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_6" value="A"> <b>A.</b> $(3; -5; 2)$</label><label><input type="radio" name="P1_Cau_6" value="B"> <b>B.</b> $(3; 5; 2)$</label><label><input type="radio" name="P1_Cau_6" value="C"> <b>C.</b> $(-5; 3; 2)$</label><label><input type="radio" name="P1_Cau_6" value="D"> <b>D.</b> $(3; 2; -5)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Lấy các hệ số đứng trước các vectơ đơn vị $\overrightarrow{i}, \overrightarrow{j}, \overrightarrow{k}$ theo đúng thứ tự.</li><li>Hệ số tương ứng là $x = 3$, $y = -5$, $z = 2$.</li></ul> <b>Vậy</b> Tọa độ của vectơ $\overrightarrow{u}$ là $(3; -5; 2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{u} = (1; -2; 0)$ và $\overrightarrow{v} = (3; 1; -1)$. Tọa độ của vectơ tổng $\overrightarrow{u} + \overrightarrow{v}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_7" value="A"> <b>A.</b> $(4; -3; -1)$</label><label><input type="radio" name="P1_Cau_7" value="B"> <b>B.</b> $(4; -1; -1)$</label><label><input type="radio" name="P1_Cau_7" value="C"> <b>C.</b> $(-2; -3; 1)$</label><label><input type="radio" name="P1_Cau_7" value="D"> <b>D.</b> $(3; -2; 0)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Cộng các tọa độ tương ứng: $x = 1 + 3 = 4$; $y = -2 + 1 = -1$; $z = 0 + (-1) = -1$.</li></ul> <b>Vậy</b> Tọa độ vectơ tổng là $\overrightarrow{u} + \overrightarrow{v} = (4; -1; -1)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{a} = (x_1; y_1; z_1)$ và $\overrightarrow{b} = (x_2; y_2; z_2)$. Biểu thức tọa độ của tích vô hướng $\overrightarrow{a} \cdot \overrightarrow{b}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_8" value="A"> <b>A.</b> $\overrightarrow{a} \cdot \overrightarrow{b} = x_1 x_2 - y_1 y_2 + z_1 z_2$</label><label><input type="radio" name="P1_Cau_8" value="B"> <b>B.</b> $\overrightarrow{a} \cdot \overrightarrow{b} = \sqrt{x_1 x_2 + y_1 y_2 + z_1 z_2}$</label><label><input type="radio" name="P1_Cau_8" value="C"> <b>C.</b> $\overrightarrow{a} \cdot \overrightarrow{b} = x_1 x_2 + y_1 y_2 + z_1 z_2$</label><label><input type="radio" name="P1_Cau_8" value="D"> <b>D.</b> $\overrightarrow{a} \cdot \overrightarrow{b} = (x_1 x_2; y_1 y_2; z_1 z_2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tích vô hướng của hai vectơ là một số thực, bằng tổng các tích của các tọa độ tương ứng.</li></ul> <b>Vậy</b> Biểu thức đúng là $\overrightarrow{a} \cdot \overrightarrow{b} = x_1 x_2 + y_1 y_2 + z_1 z_2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Trong không gian $Oxyz$, vectơ $\overrightarrow{u} = 2\overrightarrow{i} - 3\overrightarrow{k} + \overrightarrow{j}$ có tọa độ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_9" value="A"> <b>A.</b> $(2; -3; 1)$</label><label><input type="radio" name="P1_Cau_9" value="B"> <b>B.</b> $(2; -3; 0)$</label><label><input type="radio" name="P1_Cau_9" value="C"> <b>C.</b> $(2; 1; -3)$</label><label><input type="radio" name="P1_Cau_9" value="D"> <b>D.</b> $(-3; 2; 1)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Sắp xếp lại biểu thức đúng thứ tự hệ trục tọa độ: $\overrightarrow{u} = 2\overrightarrow{i} + 1\overrightarrow{j} - 3\overrightarrow{k}$.</li><li>Đối chiếu hệ số ta được $x = 2$, $y = 1$, $z = -3$.</li></ul> <b>Vậy</b> Tọa độ của vectơ $\overrightarrow{u}$ là $(2; 1; -3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Trong không gian $Oxyz$, bình phương vô hướng của vectơ $\overrightarrow{u} = (x; y; z)$ được tính theo công thức nào sau đây?</div></div><div class="options"><label><input type="radio" name="P1_Cau_10" value="A"> <b>A.</b> $\overrightarrow{u}^2 = \sqrt{x^2 + y^2 + z^2}$</label><label><input type="radio" name="P1_Cau_10" value="B"> <b>B.</b> $\overrightarrow{u}^2 = x^2 + y^2 + z^2$</label><label><input type="radio" name="P1_Cau_10" value="C"> <b>C.</b> $\overrightarrow{u}^2 = (x + y + z)^2$</label><label><input type="radio" name="P1_Cau_10" value="D"> <b>D.</b> $\overrightarrow{u}^2 = x^2 - y^2 + z^2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Bình phương vô hướng của một vectơ luôn bằng bình phương độ dài của vectơ đó.</li></ul> <b>Vậy</b> Khẳng định đúng là $\overrightarrow{u}^2 = x^2 + y^2 + z^2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{a} = (2; -1; 3)$. Tọa độ của vectơ $-2\overrightarrow{a}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_11" value="A"> <b>A.</b> $(4; -2; 6)$</label><label><input type="radio" name="P1_Cau_11" value="B"> <b>B.</b> $(-4; 2; -6)$</label><label><input type="radio" name="P1_Cau_11" value="C"> <b>C.</b> $(-4; -2; -6)$</label><label><input type="radio" name="P1_Cau_11" value="D"> <b>D.</b> $(0; 1; 1)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Nhân hệ số $k = -2$ vào từng tọa độ của vectơ $\overrightarrow{a}$: $x = (-2) \cdot 2 = -4$; $y = (-2) \cdot (-1) = 2$; $z = (-2) \cdot 3 = -6$.</li></ul> <b>Vậy</b> Tọa độ của vectơ $-2\overrightarrow{a}$ là $(-4; 2; -6)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Trong không gian $Oxyz$, cho ba điểm $A(1; 2; -1)$, $B(2; -1; 3)$ và $C(-3; 5; 1)$. Tọa độ điểm $D$ sao cho tứ giác $ABCD$ là hình bình hành là</div></div><div class="options"><label><input type="radio" name="P1_Cau_12" value="A"> <b>A.</b> $D(-4; 8; -3)$</label><label><input type="radio" name="P1_Cau_12" value="B"> <b>B.</b> $D(0; 4; 3)$</label><label><input type="radio" name="P1_Cau_12" value="C"> <b>C.</b> $D(-4; 8; -3)$</label><label><input type="radio" name="P1_Cau_12" value="D"> <b>D.</b> $D(-2; 2; 5)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tọa độ điểm $D$ được tính theo hệ thức: $x_D = x_A + x_C - x_B = 1 + (-3) - 2 = -4$; $y_D = y_A + y_C - y_B = 2 + 5 - (-1) = 8$; $z_D = z_A + z_C - z_B = -1 + 1 - 3 = -3$.</li></ul> <b>Vậy</b> Tọa độ đỉnh $D$ là $D(-4; 8; -3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Trong không gian $Oxyz$, cho tam giác $ABC$ có $\overrightarrow{AB} = (1; 2; -1)$ và $\overrightarrow{AC} = (3; 0; 1)$. Tọa độ của vectơ trung tuyến $\overrightarrow{AM}$ xuất phát từ đỉnh $A$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_13" value="A"> <b>A.</b> $(4; 2; 0)$</label><label><input type="radio" name="P1_Cau_13" value="B"> <b>B.</b> $(2; 1; 0)$</label><label><input type="radio" name="P1_Cau_13" value="C"> <b>C.</b> $(2; -2; 2)$</label><label><input type="radio" name="P1_Cau_13" value="D"> <b>D.</b> $(1; -1; 1)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có: $\overrightarrow{AB} + \overrightarrow{AC} = (1 + 3; 2 + 0; -1 + 1) = (4; 2; 0)$.</li><li>Suy ra: $\overrightarrow{AM} = \dfrac{1}{2}(4; 2; 0) = (2; 1; 0)$.</li></ul> <b>Vậy</b> Tọa độ vectơ trung tuyến là $\overrightarrow{AM} = (2; 1; 0)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{u} = (1; -2; 3)$ và $\overrightarrow{v} = (2; 1; -1)$. Tọa độ của vectơ $\overrightarrow{w} = 2\overrightarrow{u} - 3\overrightarrow{v}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_14" value="A"> <b>A.</b> $\overrightarrow{w} = (-4; -7; 9)$</label><label><input type="radio" name="P1_Cau_14" value="B"> <b>B.</b> $\overrightarrow{w} = (4; 7; -9)$</label><label><input type="radio" name="P1_Cau_14" value="C"> <b>C.</b> $\overrightarrow{w} = (-4; -1; 3)$</label><label><input type="radio" name="P1_Cau_14" value="D"> <b>D.</b> $\overrightarrow{w} = (8; -1; 3)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tính $2\overrightarrow{u} = (2; -4; 6)$.</li><li>Tính $-3\overrightarrow{v} = (-6; -3; 3)$.</li><li>Cộng theo từng thành phần tọa độ: $x = 2 - 6 = -4$; $y = -4 - 3 = -7$; $z = 6 + 3 = 9$.</li></ul> <b>Vậy</b> Tọa độ vectơ $\overrightarrow{w} = (-4; -7; 9)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{a} = (1; 2; -2)$. Độ dài của vectơ $\overrightarrow{a}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_15" value="A"> <b>A.</b> $1$</label><label><input type="radio" name="P1_Cau_15" value="B"> <b>B.</b> $3$</label><label><input type="radio" name="P1_Cau_15" value="C"> <b>C.</b> $9$</label><label><input type="radio" name="P1_Cau_15" value="D"> <b>D.</b> $\sqrt{5}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Thay các tọa độ vào công thức tính độ dài: $|\overrightarrow{a}| = \sqrt{1^2 + 2^2 + (-2)^2} = \sqrt{1 + 4 + 4} = \sqrt{9} = 3$.</li></ul> <b>Vậy</b> Độ dài của vectơ $\overrightarrow{a}$ bằng $3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 16:</b> Trong không gian $Oxyz$, khoảng cách từ điểm $M(2; -3; 4)$ đến trục tung $Oy$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_16" value="A"> <b>A.</b> $3$</label><label><input type="radio" name="P1_Cau_16" value="B"> <b>B.</b> $5$</label><label><input type="radio" name="P1_Cau_16" value="C"> <b>C.</b> $2\sqrt{5}$</label><label><input type="radio" name="P1_Cau_16" value="D"> <b>D.</b> $\sqrt{29}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Hình chiếu vuông góc của $M$ lên trục $Oy$ là $H(0; -3; 0)$.</li><li>Khoảng cách: $d(M, Oy) = MH = \sqrt{(2 - 0)^2 + (-3 - (-3))^2 + (4 - 0)^2} = \sqrt{2^2 + 4^2} = \sqrt{20} = 2\sqrt{5}$.</li></ul> <b>Vậy</b> Khoảng cách từ $M$ đến trục $Oy$ bằng $2\sqrt{5}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 17:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{a} = 2\overrightarrow{i} - 3\overrightarrow{j}$ và $\overrightarrow{b} = \overrightarrow{j} + 2\overrightarrow{k}$. Tọa độ của vectơ tổng $\overrightarrow{a} + \overrightarrow{b}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_17" value="A"> <b>A.</b> $(2; -2; 2)$</label><label><input type="radio" name="P1_Cau_17" value="B"> <b>B.</b> $(2; -3; 2)$</label><label><input type="radio" name="P1_Cau_17" value="C"> <b>C.</b> $(3; -2; 2)$</label><label><input type="radio" name="P1_Cau_17" value="D"> <b>D.</b> $(2; -4; 2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Xác định tọa độ: $\overrightarrow{a} = (2; -3; 0)$ và $\overrightarrow{b} = (0; 1; 2)$.</li><li>Cộng các tọa độ tương ứng: $\overrightarrow{a} + \overrightarrow{b} = (2 + 0; -3 + 1; 0 + 2) = (2; -2; 2)$.</li></ul> <b>Vậy</b> Tọa độ của vectơ $\overrightarrow{a} + \overrightarrow{b}$ là $(2; -2; 2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 18:</b> Trong không gian $Oxyz$, cho hai điểm $A(2; -3; 1)$ và $B(1; -1; 3)$. Độ dài của vectơ $\overrightarrow{AB}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_18" value="A"> <b>A.</b> $3$</label><label><input type="radio" name="P1_Cau_18" value="B"> <b>B.</b> $3$</label><label><input type="radio" name="P1_Cau_18" value="C"> <b>C.</b> $\sqrt{5}$</label><label><input type="radio" name="P1_Cau_18" value="D"> <b>D.</b> $\sqrt{29}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tọa độ vectơ $\overrightarrow{AB} = (1 - 2; -1 - (-3); 3 - 1) = (-1; 2; 2)$.</li><li>Độ dài: $|\overrightarrow{AB}| = \sqrt{(-1)^2 + 2^2 + 2^2} = \sqrt{1 + 4 + 4} = \sqrt{9} = 3$.</li></ul> <b>Vậy</b> Độ dài của vectơ $\overrightarrow{AB}$ bằng $3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 19:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{u} = (1; -2; 3)$. Vectơ cùng hướng với vectơ $\overrightarrow{u}$ và có độ dài bằng $2\sqrt{14}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_19" value="A"> <b>A.</b> $(2; 4; 6)$</label><label><input type="radio" name="P1_Cau_19" value="B"> <b>B.</b> $(-2; 4; -6)$</label><label><input type="radio" name="P1_Cau_19" value="C"> <b>C.</b> $(2; -4; 6)$</label><label><input type="radio" name="P1_Cau_19" value="D"> <b>D.</b> $(1; -2; 3)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Độ dài của $\overrightarrow{u}$: $|\overrightarrow{u}| = \sqrt{1^2 + (-2)^2 + 3^2} = \sqrt{14}$.</li><li>Vì $\overrightarrow{v}$ cùng hướng với $\overrightarrow{u}$ nên $\overrightarrow{v} = k\overrightarrow{u}$ với $k &gt; 0$.</li><li>Ta có $|\overrightarrow{v}| = k|\overrightarrow{u}| \Leftrightarrow 2\sqrt{14} = k\sqrt{14} \Leftrightarrow k = 2$.</li><li>Suy ra: $\overrightarrow{v} = 2(1; -2; 3) = (2; -4; 6)$.</li></ul> <b>Vậy</b> Vectơ cần tìm là $(2; -4; 6)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 20:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{u} = (1; 1; 0)$ và $\overrightarrow{v} = (0; 1; 1)$. Góc giữa hai vectơ $\overrightarrow{u}$ và $\overrightarrow{v}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_20" value="A"> <b>A.</b> $30^\circ$</label><label><input type="radio" name="P1_Cau_20" value="B"> <b>B.</b> $45^\circ$</label><label><input type="radio" name="P1_Cau_20" value="C"> <b>C.</b> $60^\circ$</label><label><input type="radio" name="P1_Cau_20" value="D"> <b>D.</b> $120^\circ$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tính $\overrightarrow{u} \cdot \overrightarrow{v} = 1 \cdot 0 + 1 \cdot 1 + 0 \cdot 1 = 1$.</li><li>Độ dài: $|\overrightarrow{u}| = \sqrt{1^2 + 1^2 + 0^2} = \sqrt{2}$; $\quad |\overrightarrow{v}| = \sqrt{0^2 + 1^2 + 1^2} = \sqrt{2}$.</li><li>Suy ra: $\cos\varphi = \dfrac{1}{\sqrt{2} \cdot \sqrt{2}} = \dfrac{1}{2} \Rightarrow \varphi = 60^\circ$.</li></ul> <b>Vậy</b> Góc giữa hai vectơ bằng $60^\circ$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 21:</b> Trong không gian $Oxyz$, cho bốn điểm $A(2; 0; 0)$, $B(0; 4; 0)$, $C(0; 0; 6)$ và $D(2; 4; 6)$. Tọa độ trọng tâm $G$ của tứ diện $ABCD$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_21" value="A"> <b>A.</b> $G(2; 4; 6)$</label><label><input type="radio" name="P1_Cau_21" value="B"> <b>B.</b> $G\left(\dfrac{4}{3}; \dfrac{8}{3}; 4\right)$</label><label><input type="radio" name="P1_Cau_21" value="C"> <b>C.</b> $G\left(1; 2; 3\right)$</label><label><input type="radio" name="P1_Cau_21" value="D"> <b>D.</b> $G(4; 8; 12)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức trọng tâm tứ diện: $x_G = \dfrac{2 + 0 + 0 + 2}{4} = 1$; $y_G = \dfrac{0 + 4 + 0 + 4}{4} = 2$; $z_G = \dfrac{0 + 0 + 6 + 6}{4} = 3$.</li></ul> <b>Vậy</b> Tọa độ trọng tâm tứ diện là $G(1; 2; 3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 22:</b> Trong không gian $Oxyz$, cho điểm $A(-1; 3; 2)$. Tọa độ điểm $A'$ đối xứng với $A$ qua trục hoành $Ox$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_22" value="A"> <b>A.</b> $A'(1; 3; 2)$</label><label><input type="radio" name="P1_Cau_22" value="B"> <b>B.</b> $A'(-1; -3; -2)$</label><label><input type="radio" name="P1_Cau_22" value="C"> <b>C.</b> $A'(1; -3; -2)$</label><label><input type="radio" name="P1_Cau_22" value="D"> <b>D.</b> $A'(-1; 3; -2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Đối xứng qua trục $Ox$ thì hoành độ $x$ giữ nguyên, tung độ $y$ và cao độ $z$ đổi dấu.</li><li>Điểm $A(-1; 3; 2) \Rightarrow A'(-1; -3; -2)$.</li></ul> <b>Vậy</b> Tọa độ điểm $A'$ là $A'(-1; -3; -2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 23:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{a}$ và $\overrightarrow{b}$ thỏa mãn $|\overrightarrow{a}| = 1$, $|\overrightarrow{b}| = 2$ và góc $(\overrightarrow{a}, \overrightarrow{b}) = 60^\circ$. Giá trị của biểu thức $(2\overrightarrow{a} + \overrightarrow{b})(\overrightarrow{a} - \overrightarrow{b})$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_23" value="A"> <b>A.</b> $-3$</label><label><input type="radio" name="P1_Cau_23" value="B"> <b>B.</b> $-3$</label><label><input type="radio" name="P1_Cau_23" value="C"> <b>C.</b> $-1$</label><label><input type="radio" name="P1_Cau_23" value="D"> <b>D.</b> $1$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tính $\overrightarrow{a} \cdot \overrightarrow{b} = 1 \cdot 2 \cdot \cos 60^\circ = 1$.</li><li>Khai triển tích vô hướng: $(2\overrightarrow{a} + \overrightarrow{b})(\overrightarrow{a} - \overrightarrow{b}) = 2|\overrightarrow{a}|^2 - 2\overrightarrow{a}\overrightarrow{b} + \overrightarrow{a}\overrightarrow{b} - |\overrightarrow{b}|^2 = 2|\overrightarrow{a}|^2 - \overrightarrow{a}\overrightarrow{b} - |\overrightarrow{b}|^2$.</li><li>Thay số: $2(1^2) - 1 - (2^2) = 2 - 1 - 4 = -3$.</li></ul> <b>Vậy</b> Giá trị của biểu thức bằng $-3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 24:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{a} = (2; 3; -4)$ và $\overrightarrow{b} = (-1; 2; 1)$. Tọa độ của vectơ $\overrightarrow{u} = \overrightarrow{a} - 2\overrightarrow{b}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_24" value="A"> <b>A.</b> $(0; 7; -2)$</label><label><input type="radio" name="P1_Cau_24" value="B"> <b>B.</b> $(4; -1; -6)$</label><label><input type="radio" name="P1_Cau_24" value="C"> <b>C.</b> $(4; 7; -6)$</label><label><input type="radio" name="P1_Cau_24" value="D"> <b>D.</b> $(0; -1; -6)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tọa độ vectơ: $x_u = 2 - 2(-1) = 4$; $y_u = 3 - 2(2) = -1$; $z_u = -4 - 2(1) = -6$.</li></ul> <b>Vậy</b> Tọa độ vectơ $\overrightarrow{u}$ là $(4; -1; -6)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 25:</b> Trong không gian $Oxyz$, cho tam giác $ABC$ biết $A(1; 2; 3)$, $B(-2; 0; 1)$ và trọng tâm $G(0; 1; 2)$. Tọa độ đỉnh $C$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_25" value="A"> <b>A.</b> $C(-1; 3; 6)$</label><label><input type="radio" name="P1_Cau_25" value="B"> <b>B.</b> $C(1; -1; 2)$</label><label><input type="radio" name="P1_Cau_25" value="C"> <b>C.</b> $C(1; 1; 2)$</label><label><input type="radio" name="P1_Cau_25" value="D"> <b>D.</b> $C\left(-\dfrac{1}{3}; 1; 2\right)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức trọng tâm: $x_C = 3 \cdot 0 - 1 - (-2) = 1$; $y_C = 3 \cdot 1 - 2 - 0 = 1$; $z_C = 3 \cdot 2 - 3 - 1 = 2$.</li></ul> <b>Vậy</b> Tọa độ đỉnh $C$ là $C(1; 1; 2)$.</div></div></div>
+        <button type="button" class="submit-btn" id="submitBtn" onclick="submitQuiz()">Nộp Bài</button>
+        <button type="button" class="submit-btn" id="viewSolBtn" onclick="showPasswordPrompt()" style="background: #17a2b8;">Xem Đáp Án & Lời Giải</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div id="passwordPrompt">
+        <h4>Mở Khóa Lời Giải</h4>
+        <p style="color: #856404; font-size: 14px; margin-top: 0;">Nhập mật khẩu từ Giáo viên để xem đáp án chi tiết.</p>
+        <input type="password" id="solPassword" placeholder="Nhập mật khẩu...">
+        <button type="button" onclick="checkPassword()">Xem</button>
+    </div>
+
+    <footer class="author-footer">Liên hệ Bùi Thanh Cương - 0915782183</footer>
+
+    <script>
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if ((ua.indexOf("FBAN") === -1) && (ua.indexOf("FBAV") === -1) && (ua.indexOf("Zalo") === -1)) {
+            document.getElementById("zaloWarning").style.display = "none";
+        }
+
+        const GAS_URL = ""; 
+        const correctAnswers = {"P1_Cau_1": "B", "P1_Cau_2": "C", "P1_Cau_3": "B", "P1_Cau_4": "C", "P1_Cau_5": "D", "P1_Cau_6": "A", "P1_Cau_7": "B", "P1_Cau_8": "C", "P1_Cau_9": "C", "P1_Cau_10": "B", "P1_Cau_11": "B", "P1_Cau_12": "C", "P1_Cau_13": "B", "P1_Cau_14": "A", "P1_Cau_15": "B", "P1_Cau_16": "C", "P1_Cau_17": "A", "P1_Cau_18": "B", "P1_Cau_19": "C", "P1_Cau_20": "C", "P1_Cau_21": "C", "P1_Cau_22": "B", "P1_Cau_23": "B", "P1_Cau_24": "B", "P1_Cau_25": "C"};
+        let isSubmitted = false;
+        
+        function moveNext(current, nextId) {
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1 && nextId) document.getElementById(nextId).focus();
+        }
+        function movePrev(e, current, prevId) {
+            if (e.key === "Backspace" && current.value === "" && prevId) document.getElementById(prevId).focus();
+        }
+
+        // =====================================================================
+        // LƯU TRẠNG THÁI (tải lại trang không mất bài, không reset đồng hồ)
+        // Thêm ?reset=1 vào đường dẫn để xóa trạng thái khi giáo viên muốn thử lại.
+        // =====================================================================
+        function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+        const STORE_KEY = 'quizstate:v2:' + location.pathname + '|' + document.title + '|' + hashStr(JSON.stringify(correctAnswers) + '|' + 20);
+        if (/[?&]reset=1(&|$)/.test(location.search)) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} }
+
+        function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+        let state = loadState() || {};
+        function saveState(patch) {
+            Object.assign(state, patch);
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}   // bị chặn lưu (chế độ riêng tư...) thì chạy bằng bộ nhớ tạm
+        }
+        function newId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
+
+        const DURATION_MS = 20 * 60 * 1000;
+        if (!state.endTime) saveState({ endTime: Date.now() + DURATION_MS });
+        if (!state.attemptId) saveState({ attemptId: newId() });
+
+        function formFields() { return Array.from(document.querySelectorAll('#studentName, #studentClass, #quizForm input, #quizForm textarea')); }
+        function collectAnswers() { return formFields().map(el => (el.type === 'radio' || el.type === 'checkbox') ? (el.checked ? 1 : 0) : el.value); }
+        function restoreAnswers(arr) {
+            const f = formFields();
+            if (!Array.isArray(arr) || arr.length !== f.length) return;
+            f.forEach((el, i) => { if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!arr[i]; else el.value = arr[i]; });
+        }
+
+        let saveTimer;
+        function scheduleSave() {
+            if (isSubmitted) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => saveState({ answers: collectAnswers() }), 250);
+        }
+        document.addEventListener('input', scheduleSave);
+        document.addEventListener('change', scheduleSave);
+        window.addEventListener('pagehide', () => { if (!isSubmitted) saveState({ answers: collectAnswers() }); });
+
+        const resDiv = document.getElementById('result');
+        function showResult(html) { resDiv.style.display = 'block'; resDiv.innerHTML = html; }
+        function lockForm() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.querySelectorAll('#quizForm input, #quizForm textarea, #studentName, #studentClass').forEach(el => el.disabled = true);
+        }
+        const scoreSpan = s => `<span style="font-size: 24px; color: red;">${s}</span>`;
+
+        // Gửi kết quả; mất mạng thì giữ lại và tự gửi lại (khi có mạng, hoặc mỗi 15 giây)
+        let sending = false;
+        function sendPayload() {
+            const finalScoreString = state.finalScore;
+            if (!GAS_URL) {
+                saveState({ sent: true });
+                showResult(`Đã chấm xong (chưa cấu hình nơi nhận kết quả).<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+                return;
+            }
+            if (sending) return;
+            sending = true;
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                keepalive: true,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(state.payload)
+            }).then(() => {
+                sending = false;
+                saveState({ sent: true });
+                showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            }).catch(() => {
+                sending = false;
+                showResult(`Đã chấm xong nhưng <b>chưa gửi được</b> kết quả (mạng yếu).<br>Em hãy giữ nguyên trang này, bài sẽ tự gửi lại khi có mạng.<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            });
+        }
+        function retryPending() { if (state.submitted && !state.sent) sendPayload(); }
+        window.addEventListener('online', retryPending);
+        setInterval(retryPending, 15000);
+
+        // Đồng hồ tính theo giờ kết thúc nên không lệch khi tab ở nền hoặc điện thoại khóa màn hình
+        const timerEl = document.getElementById("timer");
+        let timeoutFired = false;
+        const countdown = setInterval(tick, 500);
+        document.addEventListener('visibilitychange', tick);
+        function tick() {
+            if (isSubmitted) { clearInterval(countdown); return; }
+            const remain = Math.ceil((state.endTime - Date.now()) / 1000);
+            if (remain <= 0) {
+                if (timeoutFired) return;
+                timeoutFired = true;
+                clearInterval(countdown);
+                timerEl.innerHTML = "HẾT GIỜ!";
+                alert("Đã hết thời gian làm bài. Hệ thống tự động nộp bài!");
+                submitQuiz(true);
+            } else {
+                const m = Math.floor(remain / 60), s = remain % 60;
+                timerEl.innerHTML = m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+            }
+        }
+
+        // Khôi phục khi mở lại trang
+        restoreAnswers(state.answers);
+        if (state.submitted) {
+            isSubmitted = true;
+            lockForm();
+            timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            if (state.sent) showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(state.finalScore)}`);
+            else { showResult('Đang gửi lại kết quả...'); retryPending(); }
+        } else {
+            tick();
+        }
+
+        function submitQuiz(autoSubmit = false) {
+            if (isSubmitted) return;
+            const name = document.getElementById('studentName').value.trim();
+            const className = document.getElementById('studentClass').value.trim();
+            
+            if (!autoSubmit && (!name || !className)) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp trước khi nộp!");
+                return;
+            }
+
+            isSubmitted = true;
+            if (typeof timerEl !== 'undefined' && timerEl) {
+                timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            }
+            
+            const form = document.getElementById('quizForm');
+            let score = 0;
+            
+            let payload = {
+                'name': name || "Vô danh (Hết giờ)",
+                'className': className || "N/A"
+            };
+
+            for (let i = 1; i <= 25; i++) {
+                const qName = `P1_Cau_${i}`;
+                const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                let ans = selected ? selected.value : "K";
+                const correctVal = correctAnswers[qName];
+                
+                let isCorrect = (selected && selected.value === correctVal);
+                if (isCorrect) score += 0.25;
+                
+                let statusStr = isCorrect ? "Đúng" : (selected ? "Sai" : "K");
+                payload[qName] = `${ans} (${statusStr})`;
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 0; i++) {
+                let correctCount = 0;
+                let questionDetail = [];
+                
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                        let ans = selected ? selected.value : "K";
+                        const correctVal = correctAnswers[qName];
+                        let isSubCorrect = (selected && selected.value === correctVal);
+                        if (isSubCorrect) correctCount++;
+                        
+                        let subStatus = isSubCorrect ? "Đ" : (selected ? "S" : "-");
+                        questionDetail.push(`${l}:${ans}(${subStatus})`);
+                    }
+                });
+                
+                let p2ScoreEarned = 0;
+                if (correctCount === 1) p2ScoreEarned = 0.1;
+                else if (correctCount === 2) p2ScoreEarned = 0.25;
+                else if (correctCount === 3) p2ScoreEarned = 0.5;
+                else if (correctCount === 4) p2ScoreEarned = 1.0;
+                
+                score += p2ScoreEarned;
+                payload[`P2_Cau_${i}`] = `[${correctCount} ý đúng] ${questionDetail.join(' ')}`;
+            }
+
+            for (let i = 1; i <= 0; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box && box.value) ans += box.value;
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    if (isCorrect) score += 0.5;
+                    
+                    let statusStr = isCorrect ? "Đúng" : (studentAns !== "" ? "Sai" : "K");
+                    payload[qName] = `${studentAns || 'Bỏ trống'} (${statusStr})`;
+                }
+            }
+
+            const finalScoreString = `${score.toFixed(2)}/6.25`;
+            payload['score'] = score.toFixed(2);
+            payload['maxScore'] = '6.25';
+            payload['attemptId'] = state.attemptId;   // để Apps Script bỏ các lần gửi trùng
+
+            lockForm();
+            saveState({ answers: collectAnswers(), submitted: true, sent: false, payload: payload, finalScore: finalScoreString });
+            showResult('Đã chấm xong, đang gửi kết quả...');
+            sendPayload();
+        }
+
+        function showPasswordPrompt() {
+            document.getElementById('passwordPrompt').style.display = 'block';
+            document.getElementById('viewSolBtn').style.display = 'none';
+            document.getElementById('passwordPrompt').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function checkPassword() {
+            const entered = document.getElementById('solPassword').value;
+            if (entered === "09157821830915782193") {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                revealSolutions();
+            } else {
+                alert("Mật khẩu không chính xác! Vui lòng liên hệ Giáo viên.");
+            }
+        }
+
+        function revealSolutions() {
+            isSubmitted = true;
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            const allInputs = document.querySelectorAll('#quizForm input, #quizForm textarea');
+            allInputs.forEach(input => input.disabled = true);
+
+            const form = document.getElementById('quizForm');
+            
+            for (let i = 1; i <= 25; i++) {
+                const qName = `P1_Cau_${i}`;
+                const correctVal = correctAnswers[qName];
+                const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                allRadios.forEach(radio => {
+                    const lbl = radio.closest('label');
+                    if (radio.value === correctVal) {
+                        lbl.style.backgroundColor = '#d4edda';
+                        lbl.style.borderColor = '#28a745';
+                    } else if (radio.checked) {
+                        lbl.style.backgroundColor = '#f8d7da';
+                        lbl.style.borderColor = '#dc3545';
+                    } else {
+                        lbl.style.opacity = '0.5';
+                    }
+                });
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 0; i++) {
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const correctVal = correctAnswers[qName];
+                        const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                        allRadios.forEach(radio => {
+                            const lbl = radio.closest('label');
+                            if (radio.value === correctVal) {
+                                lbl.style.backgroundColor = '#d4edda';
+                                lbl.style.color = '#155724';
+                            } else if (radio.checked) {
+                                lbl.style.backgroundColor = '#f8d7da';
+                                lbl.style.color = '#721c24';
+                            } else {
+                                lbl.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                });
+            }
+
+            for (let i = 1; i <= 0; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    let boxes = [];
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box) {
+                            boxes.push(box);
+                            if (box.value) ans += box.value;
+                        }
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    boxes.forEach(box => {
+                        if (isCorrect) {
+                            box.style.backgroundColor = '#d4edda';
+                            box.style.borderColor = '#28a745';
+                            box.style.color = '#155724';
+                        } else {
+                            box.style.backgroundColor = '#f8d7da';
+                            box.style.borderColor = '#dc3545';
+                            box.style.color = '#721c24';
+                        }
+                    });
+
+                    const group = document.querySelector(`#${qName}_1`).closest('.options');
+                    let correctDiv = document.createElement('div');
+                    correctDiv.style.marginTop = '10px';
+                    correctDiv.innerHTML = `<span style="color:#28a745; font-weight:bold; font-size:16px;">Đáp án đúng: ${correctAnswers[qName]}</span>`;
+                    group.appendChild(correctDiv);
+                }
+            }
+
+            const solutions = document.querySelectorAll('.solution-box');
+            solutions.forEach(box => box.style.display = 'block');
+
+            // Chuẩn hóa lại SVG vừa hiện ra (lúc này mới đo được kích thước)
+            initMedia();
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise().then(initMedia);
+        }
+
+        const MEDIA_SCOPE = '.question, .solution-box';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive, #tblOverlay')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        // ---- Bảng rộng: gợi ý vuốt ngang, cột đầu cố định, nút xem toàn màn hình ----
+        const __tblRefresh = [];
+        window.addEventListener('resize', () => __tblRefresh.forEach(fn => fn()));
+        function tblState(box, sc) {
+            const over = sc.scrollWidth > sc.clientWidth + 2;
+            box.classList.toggle('has-scroll', over);
+            box.classList.toggle('at-end', !over || sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2);
+        }
+        function enhanceTables() {
+            document.querySelectorAll('.table-responsive, .table-scroll').forEach(sc => {
+                if (sc.dataset.tblDone || sc.closest('#tblOverlay')) return;
+                const table = sc.querySelector('table');
+                if (!table || !sc.parentNode) return;
+                sc.dataset.tblDone = '1';
+                const box = document.createElement('div'); box.className = 'tbl-box';
+                const hint = document.createElement('div'); hint.className = 'tbl-hint';
+                const msg = document.createElement('span'); msg.textContent = '\u2194 Vuốt ngang để xem thêm';
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-open'; btn.textContent = '\u26F6 Xem toàn màn hình';
+                btn.addEventListener('click', e => { e.stopPropagation(); openTableOverlay(table); });
+                hint.append(msg, btn);
+                const wrap = document.createElement('div'); wrap.className = 'tbl-wrap';
+                const fade = document.createElement('div'); fade.className = 'tbl-fade';
+                sc.parentNode.insertBefore(box, sc);
+                box.append(hint, wrap);
+                wrap.append(sc, fade);
+                const first = table.rows[0];
+                if (first && first.cells.length >= 4 && first.cells[0].colSpan === 1 && first.cells[0].rowSpan === 1) table.classList.add('sticky-first');
+                const upd = () => tblState(box, sc);
+                sc.addEventListener('scroll', upd, { passive: true });
+                if (window.ResizeObserver) new ResizeObserver(upd).observe(table);
+                __tblRefresh.push(upd);
+                upd();
+            });
+        }
+        let tblOv = null, tblScale = 1;
+        function closeTableOverlay() {
+            if (!tblOv) return;
+            tblOv.classList.remove('open');
+            document.documentElement.style.overflow = '';
+        }
+        function openTableOverlay(table) {
+            if (!tblOv) {
+                tblOv = document.createElement('div'); tblOv.id = 'tblOverlay';
+                tblOv.innerHTML = '<div class="tbl-ov-bar"><span class="ttl">Kéo để xem; A+ / A\u2212 đổi cỡ chữ</span>'
+                    + '<button type="button" class="zoom-btn" data-a="-">A\u2212</button><button type="button" class="zoom-btn" data-a="+">A+</button>'
+                    + '<button type="button" class="zoom-btn" data-a="x">\u2715 Đóng</button></div><div class="tbl-ov-body"></div>';
+                document.body.appendChild(tblOv);
+                tblOv.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-a]');
+                    if (!b) return;
+                    if (b.dataset.a === 'x') { closeTableOverlay(); return; }
+                    tblScale = Math.min(2.6, Math.max(0.6, tblScale + (b.dataset.a === '+' ? 0.2 : -0.2)));
+                    tblOv.style.setProperty('--tbl-s', tblScale);
+                });
+                window.addEventListener('keydown', e => {                 // đang xem bảng: không để phím chuyển câu / slide
+                    if (!tblOv.classList.contains('open')) return;
+                    e.stopImmediatePropagation();
+                    if (e.key === 'Escape') closeTableOverlay();
+                }, true);
+            }
+            const body = tblOv.querySelector('.tbl-ov-body');
+            body.innerHTML = '';
+            const c = table.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+            c.classList.remove('sticky-first');
+            body.appendChild(c);
+            tblScale = 1;
+            tblOv.style.setProperty('--tbl-s', 1);
+            tblOv.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            body.scrollTo(0, 0);
+        }
+
+        function initMedia() { wrapTables(); enhanceTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+    </script>
+</body>
+</html>
