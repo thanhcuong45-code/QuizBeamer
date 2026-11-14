@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CauHoi</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 15px; line-height: 1.6; padding-top: 70px; overflow-x: hidden; background: #f7fbff; }
+        .header-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e88e5; color: white; padding: 10px 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; box-shadow: 0 2px 6px rgba(30,136,229,0.2); }
+        .header-bar h2 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        #timer { font-size: 16px; font-weight: bold; background: #e53935; padding: 5px 10px; border-radius: 4px; white-space: nowrap; }
+        
+        .zalo-warning { background: #eef6fc; color: #1565c0; padding: 10px; border: 1px solid #b3d4fc; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: justify; font-size: 14px; }
+        
+        h3 { color: #1565c0; border-bottom: 2px solid #b3d4fc; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; font-size: 18px; }
+        .info-group { margin-bottom: 15px; }
+        .info-group input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; background: #fff; }
+        .info-group input:focus { border-color: #1e88e5; outline: none; box-shadow: 0 0 0 3px rgba(30,136,229,0.12); }
+        
+        .question { background: #eef6fc; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #b3d4fc; box-sizing: border-box; width: 100%; overflow-x: auto; }
+        .question-text { margin-bottom: 15px; word-wrap: break-word; } 
+        
+        mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+        
+        .options label { display: block; padding: 10px; margin: 8px 0; background: #ffffff; border: 1px solid #b3d4fc; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .options label:hover { background: #e3f0fb; border-color: #1e88e5; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0; }
+        .tf-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 320px; }
+        .tf-table td { padding: 10px; border: 1px solid #b3d4fc; }
+        .tf-radio-group { display: flex; gap: 10px; justify-content: center; }
+        .tf-radio-group label { cursor: pointer; font-weight: bold; padding: 5px; border-radius: 3px; transition: 0.3s; }
+        
+        .short-ans-group { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .short-ans-box { width: 50px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #1e88e5; border-radius: 5px; box-sizing: border-box; font-weight: bold; color: #1565c0; background: #fff; transition: 0.3s; }
+        .short-ans-box:focus { border-color: #0d47a1; outline: none; box-shadow: 0 0 6px rgba(30,136,229,0.3); }
+        
+        .essay-input { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #b3d4fc; border-radius: 4px; box-sizing: border-box; height: 150px; resize: vertical; background: #fff; }
+        .essay-input:focus { border-color: #1e88e5; outline: none; }
+        
+        .solution-box { display: none; margin-top: 15px; padding: 15px; background: #e8f4fc; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
+        
+        button.submit-btn { width: 100%; padding: 15px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 18px; cursor: pointer; margin-top: 15px; font-weight: bold; margin-bottom: 5px; }
+        button.submit-btn:hover { background: #1565c0; }
+        #result { display: none; margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 18px; background: #eef6fc; color: #0d47a1; border: 1px solid #b3d4fc; margin-bottom: 20px;}
+        
+        #passwordPrompt { display: none; margin-top: 20px; padding: 20px; background: #eef6fc; border: 1px solid #b3d4fc; border-radius: 5px; text-align: center; margin-bottom: 40px; }
+        #passwordPrompt h4 { color: #1565c0; margin-top: 0; margin-bottom: 10px; }
+        #passwordPrompt input { padding: 10px; width: 60%; max-width: 250px; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; }
+        #passwordPrompt button { width: auto; padding: 10px 20px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; margin-left: 10px; }
+        
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+        /* .table-responsive do TeX2HTML tạo ra: trước đây chỉ mẫu làm bài có CSS này nên bảng rộng bị tràn ở trình chiếu / luyện tập */
+        .table-responsive { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 15px 0; }
+        /* --- BẢNG RỘNG TRÊN ĐIỆN THOẠI: gợi ý vuốt ngang, cột đầu cố định, xem toàn màn hình --- */
+        .tbl-box { position: relative; margin: 12px 0; max-width: 100%; min-width: 0; }
+        .tbl-box > .tbl-wrap { position: relative; }
+        .tbl-box .table-responsive, .tbl-box .table-scroll { margin: 0; }
+        .tbl-hint { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-size: 12.5px; color: #5f7b94; }
+        .tbl-box.has-scroll > .tbl-hint { display: flex; }
+        .tbl-open { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--zoom-border); background: var(--zoom-bar-bg); color: var(--zoom-accent-hover); cursor: pointer; white-space: nowrap; }
+        .tbl-fade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; pointer-events: none; background: linear-gradient(to right, rgba(255,255,255,0), rgba(120,140,160,.28)); }
+        .tbl-box.has-scroll:not(.at-end) .tbl-fade { display: block; }
+        .tbl-box.has-scroll table.sticky-first tr > :first-child { position: sticky; left: 0; z-index: 2; background: #fff; box-shadow: 2px 0 4px -2px rgba(0,0,0,.35); }
+        @media (max-width: 600px) {
+            .tbl-box td, .tbl-box th { font-size: 14px; padding: 4px 7px !important; }
+        }
+        #tblOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; flex-direction: column; }
+        #tblOverlay.open { display: flex; }
+        .tbl-ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--zoom-bar-bg); border-bottom: 1px solid var(--zoom-border); }
+        .tbl-ov-bar .ttl { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; color: #333; }
+        .tbl-ov-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px; touch-action: pan-x pan-y; }
+        .tbl-ov-body table { margin: 0; width: auto; max-width: none; border-collapse: collapse; font-size: calc(15px * var(--tbl-s, 1)); }
+        .tbl-ov-body td, .tbl-ov-body th { font-size: inherit !important; padding: 5px 9px; }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        /* Huy hiệu mức độ khó (suy ra từ ID câu hỏi, HTML bài giảng) */
+        .lvl { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: bold; line-height: 1.6; white-space: nowrap; vertical-align: middle; cursor: help; }
+        .lvl .dots { letter-spacing: 1px; margin-right: 4px; }
+        .lvl.lv1 { background: #e6f4ea; border-color: #34a853; color: #1b6b32; }
+        .lvl.lv2 { background: #e3f0fb; border-color: #4a90d9; color: #0d47a1; }
+        .lvl.lv3 { background: #fff3e0; border-color: #fb8c00; color: #8a4b00; }
+        .lvl.lv4 { background: #fdeaea; border-color: #e53935; color: #a31515; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+        .tex-fa { margin: 0 .25em; font-style: normal; }
+
+
+
+        .author-footer { margin: 30px 0 10px; padding-top: 10px; border-top: 1px solid #b3d4fc; text-align: center; color: #5f7b94; font-size: 13px; }
+        .author-footer:empty { display: none; }
+    </style>
+    
+    <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true,
+            macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1]}
+          },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <h2>CauHoi</h2>
+        <div id="timer">Đang tải...</div>
+    </div>
+    
+    <div class="zalo-warning" id="zaloWarning">
+        ⚠️ CHÚ Ý: Nếu em đang mở bài này trực tiếp trên Zalo/Messenger, hãy bấm vào biểu tượng "Dấu 3 chấm" ở góc phải màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari) để không bị lỗi kết nối.
+    </div>
+
+    <div class="info-group">
+        <label>Họ và tên học sinh:</label>
+        <input type="text" id="studentName" placeholder="Nhập họ và tên..." required>
+    </div>
+    <div class="info-group">
+        <label>Lớp:</label>
+        <input type="text" id="studentClass" placeholder="Nhập lớp..." required>
+    </div>
+
+    <hr>
+    <form id="quizForm" onsubmit="return false;">
+        <h3>PHẦN 1. Câu trắc nghiệm nhiều phương án lựa chọn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho hai vectơ $\overrightarrow{a}$ và $\overrightarrow{b}$ thỏa mãn $\left|\overrightarrow{a}\right|=3$, $\left|\overrightarrow{b}\right|=2$ và $\overrightarrow{a}\cdot\overrightarrow{b} = -3$. Xác định góc $\alpha$ giữa hai vectơ $\overrightarrow{a}$ và $\overrightarrow{b}$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_1" value="A"> <b>A.</b> $\alpha = 30^\circ$</label><label><input type="radio" name="P1_Cau_1" value="B"> <b>B.</b> $\alpha = 45^\circ$</label><label><input type="radio" name="P1_Cau_1" value="C"> <b>C.</b> $\alpha = 60^\circ$</label><label><input type="radio" name="P1_Cau_1" value="D"> <b>D.</b> $\alpha = 120^\circ$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có: $\cos\left(\overrightarrow{a},\overrightarrow{b}\right) = \dfrac{\overrightarrow{a}\cdot\overrightarrow{b}}{\left|\overrightarrow{a}\right|\cdot\left|\overrightarrow{b}\right|} = \dfrac{-3}{3\cdot 2} = -\dfrac{1}{2} \Rightarrow \left(\overrightarrow{a},\overrightarrow{b}\right) = 120^\circ$.</li></ul> <b>Vậy</b> Góc $\alpha$ giữa hai vectơ $\overrightarrow{a}$ và $\overrightarrow{b}$ là $\alpha = 120^\circ$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Trong không gian $Oxyz$, cho hai điểm $A(1; 2; -3)$ và $B(3; -2; 1)$. Tọa độ trung điểm $M$ của đoạn thẳng $AB$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_2" value="A"> <b>A.</b> $M(4; 0; -2)$</label><label><input type="radio" name="P1_Cau_2" value="B"> <b>B.</b> $M(1; -2; 2)$</label><label><input type="radio" name="P1_Cau_2" value="C"> <b>C.</b> $M(2; 0; -1)$</label><label><input type="radio" name="P1_Cau_2" value="D"> <b>D.</b> $M(2; 0; -2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức tọa độ trung điểm: $x_M = \dfrac{1 + 3}{2} = 2$; $y_M = \dfrac{2 + (-2)}{2} = 0$; $z_M = \dfrac{-3 + 1}{2} = -1$.</li></ul> <b>Vậy</b> Tọa độ điểm $M$ là $M(2; 0; -1)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{u} = (x; y; z)$. Độ dài của vectơ $\overrightarrow{u}$ được tính theo công thức nào sau đây?</div></div><div class="options"><label><input type="radio" name="P1_Cau_3" value="A"> <b>A.</b> $\left|\overrightarrow{u}\right| = x^2 + y^2 + z^2$</label><label><input type="radio" name="P1_Cau_3" value="B"> <b>B.</b> $\left|\overrightarrow{u}\right| = \sqrt{x^2 + y^2 + z^2}$</label><label><input type="radio" name="P1_Cau_3" value="C"> <b>C.</b> $\left|\overrightarrow{u}\right| = \sqrt{x + y + z}$</label><label><input type="radio" name="P1_Cau_3" value="D"> <b>D.</b> $\left|\overrightarrow{u}\right| = |x| + |y| + |z|$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Độ dài của một vectơ bằng căn bậc hai số học của tổng bình phương các tọa độ của vectơ đó.</li></ul> <b>Vậy</b> Công thức đúng là $\left|\overrightarrow{u}\right| = \sqrt{x^2 + y^2 + z^2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Trong không gian $Oxyz$, cho hai điểm $A(2; 1; -1)$ và $B(1; 3; -4)$. Tọa độ của vectơ $\overrightarrow{AB}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_4" value="A"> <b>A.</b> $\overrightarrow{AB} = (3; 4; -5)$</label><label><input type="radio" name="P1_Cau_4" value="B"> <b>B.</b> $\overrightarrow{AB} = (-1; 2; -3)$</label><label><input type="radio" name="P1_Cau_4" value="C"> <b>C.</b> $\overrightarrow{AB} = (1; -2; 3)$</label><label><input type="radio" name="P1_Cau_4" value="D"> <b>D.</b> $\overrightarrow{AB} = (-1; -2; -3)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Lấy tọa độ điểm cuối trừ tọa độ điểm đầu tương ứng: $x = 1 - 2 = -1$; $y = 3 - 1 = 2$; $z = -4 - (-1) = -3$.</li></ul> <b>Vậy</b> Vectơ $\overrightarrow{AB} = (-1; 2; -3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Trong không gian $Oxyz$, cho điểm $M(x; y; z)$. Khẳng định nào sau đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_5" value="A"> <b>A.</b> $\overrightarrow{OM} = x\overrightarrow{i} + z\overrightarrow{j} + y\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_5" value="B"> <b>B.</b> $\overrightarrow{OM} = y\overrightarrow{i} + x\overrightarrow{j} + z\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_5" value="C"> <b>C.</b> $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$</label><label><input type="radio" name="P1_Cau_5" value="D"> <b>D.</b> $\overrightarrow{OM} = z\overrightarrow{i} + y\overrightarrow{j} + x\overrightarrow{k}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Theo định nghĩa tọa độ điểm trong hệ tọa độ $Oxyz$, tọa độ của điểm $M$ chính là tọa độ của vectơ vị trí $\overrightarrow{OM}$.</li><li>Biểu diễn qua các vectơ đơn vị: $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$.</li></ul> <b>Vậy</b> Khẳng định đúng là $\overrightarrow{OM} = x\overrightarrow{i} + y\overrightarrow{j} + z\overrightarrow{k}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Trong không gian với hệ trục tọa độ $Oxyz$, cho hình vẽ bên dưới với điểm $B'(5 ; 4 ; 4)$. Hãy xác định tọa độ vectơ $\overrightarrow{A'C}$. <div class="center"><div class="tp"><div class="table-responsive figure" style="text-align:center;margin:10px 0"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="211.718pt" height="173.131pt" viewBox="0 0 211.718 173.131" version="1.2"><defs><g><symbol overflow="visible" id="f1_glyph0-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f1_glyph0-1"><path style="stroke:none;" d="M 4.812 -3.781 C 4.859 -3.906 4.859 -3.938 4.859 -4 C 4.859 -4.188 4.719 -4.266 4.562 -4.266 C 4.469 -4.266 4.312 -4.203 4.219 -4.062 C 4.203 -4.016 4.125 -3.703 4.078 -3.531 C 4.016 -3.266 3.938 -3 3.891 -2.734 L 3.438 -0.953 C 3.391 -0.797 2.969 -0.109 2.312 -0.109 C 1.812 -0.109 1.703 -0.547 1.703 -0.906 C 1.703 -1.359 1.875 -1.984 2.203 -2.859 C 2.375 -3.266 2.406 -3.375 2.406 -3.562 C 2.406 -4.016 2.094 -4.375 1.594 -4.375 C 0.656 -4.375 0.281 -2.938 0.281 -2.859 C 0.281 -2.75 0.391 -2.75 0.406 -2.75 C 0.5 -2.75 0.516 -2.781 0.562 -2.938 C 0.828 -3.859 1.234 -4.156 1.562 -4.156 C 1.641 -4.156 1.812 -4.156 1.812 -3.844 C 1.812 -3.594 1.719 -3.344 1.641 -3.156 C 1.25 -2.094 1.062 -1.531 1.062 -1.062 C 1.062 -0.188 1.688 0.109 2.281 0.109 C 2.672 0.109 3 -0.062 3.281 -0.344 C 3.156 0.172 3.031 0.656 2.641 1.188 C 2.375 1.531 2 1.812 1.547 1.812 C 1.406 1.812 0.953 1.781 0.797 1.391 C 0.953 1.391 1.078 1.391 1.219 1.281 C 1.312 1.188 1.422 1.062 1.422 0.875 C 1.422 0.562 1.156 0.531 1.047 0.531 C 0.828 0.531 0.5 0.688 0.5 1.172 C 0.5 1.672 0.938 2.031 1.547 2.031 C 2.562 2.031 3.594 1.125 3.859 0.016 Z M 4.812 -3.781 " /></symbol><symbol overflow="visible" id="f1_glyph0-2"><path style="stroke:none;" d="M 3.312 -2.984 C 3.375 -3.25 3.594 -4.156 4.297 -4.156 C 4.344 -4.156 4.578 -4.156 4.781 -4.031 C 4.5 -3.984 4.312 -3.734 4.312 -3.5 C 4.312 -3.344 4.422 -3.156 4.688 -3.156 C 4.906 -3.156 5.219 -3.328 5.219 -3.719 C 5.219 -4.234 4.641 -4.375 4.297 -4.375 C 3.719 -4.375 3.375 -3.859 3.266 -3.625 C 3.016 -4.281 2.484 -4.375 2.188 -4.375 C 1.156 -4.375 0.594 -3.094 0.594 -2.859 C 0.594 -2.75 0.688 -2.75 0.719 -2.75 C 0.797 -2.75 0.828 -2.781 0.844 -2.859 C 1.172 -3.906 1.828 -4.156 2.172 -4.156 C 2.359 -4.156 2.703 -4.078 2.703 -3.5 C 2.703 -3.188 2.531 -2.531 2.172 -1.141 C 2.016 -0.531 1.672 -0.109 1.234 -0.109 C 1.172 -0.109 0.938 -0.109 0.734 -0.234 C 0.984 -0.281 1.203 -0.5 1.203 -0.766 C 1.203 -1.047 0.984 -1.125 0.828 -1.125 C 0.531 -1.125 0.281 -0.859 0.281 -0.547 C 0.281 -0.094 0.781 0.109 1.219 0.109 C 1.875 0.109 2.234 -0.578 2.266 -0.641 C 2.375 -0.281 2.734 0.109 3.328 0.109 C 4.344 0.109 4.906 -1.172 4.906 -1.422 C 4.906 -1.516 4.828 -1.516 4.797 -1.516 C 4.703 -1.516 4.688 -1.469 4.672 -1.406 C 4.344 -0.344 3.672 -0.109 3.344 -0.109 C 2.969 -0.109 2.797 -0.422 2.797 -0.766 C 2.797 -0.984 2.859 -1.203 2.969 -1.641 Z M 3.312 -2.984 " /></symbol><symbol overflow="visible" id="f1_glyph0-3"><path style="stroke:none;" d="M 1.312 -0.828 C 1.859 -1.391 2.141 -1.641 2.5 -1.953 C 2.5 -1.969 3.109 -2.484 3.469 -2.844 C 4.406 -3.766 4.625 -4.234 4.625 -4.281 C 4.625 -4.375 4.531 -4.375 4.516 -4.375 C 4.453 -4.375 4.422 -4.359 4.375 -4.266 C 4.078 -3.797 3.859 -3.641 3.625 -3.641 C 3.391 -3.641 3.266 -3.781 3.125 -3.953 C 2.938 -4.188 2.766 -4.375 2.438 -4.375 C 1.688 -4.375 1.234 -3.453 1.234 -3.25 C 1.234 -3.203 1.266 -3.141 1.359 -3.141 C 1.453 -3.141 1.469 -3.188 1.484 -3.25 C 1.672 -3.703 2.25 -3.719 2.328 -3.719 C 2.531 -3.719 2.719 -3.641 2.953 -3.562 C 3.344 -3.422 3.453 -3.422 3.719 -3.422 C 3.359 -2.984 2.531 -2.281 2.344 -2.125 L 1.453 -1.281 C 0.766 -0.625 0.422 -0.062 0.422 0.016 C 0.422 0.109 0.531 0.109 0.547 0.109 C 0.625 0.109 0.641 0.094 0.703 -0.016 C 0.938 -0.359 1.234 -0.641 1.547 -0.641 C 1.766 -0.641 1.875 -0.547 2.125 -0.25 C 2.281 -0.047 2.469 0.109 2.75 0.109 C 3.734 0.109 4.312 -1.156 4.312 -1.422 C 4.312 -1.469 4.266 -1.516 4.188 -1.516 C 4.094 -1.516 4.078 -1.453 4.047 -1.391 C 3.828 -0.75 3.188 -0.562 2.859 -0.562 C 2.672 -0.562 2.484 -0.609 2.281 -0.688 C 1.938 -0.812 1.797 -0.859 1.578 -0.859 C 1.562 -0.859 1.406 -0.859 1.312 -0.828 Z M 1.312 -0.828 " /></symbol><symbol overflow="visible" id="f1_glyph0-4"><path style="stroke:none;" d="M 7.328 -4.312 C 7.328 -5.906 6.281 -6.984 4.797 -6.984 C 2.672 -6.984 0.484 -4.734 0.484 -2.422 C 0.484 -0.781 1.594 0.219 3.016 0.219 C 5.125 0.219 7.328 -1.953 7.328 -4.312 Z M 3.078 -0.047 C 2.094 -0.047 1.406 -0.844 1.406 -2.156 C 1.406 -2.578 1.547 -4.031 2.312 -5.188 C 2.984 -6.219 3.969 -6.734 4.75 -6.734 C 5.562 -6.734 6.453 -6.188 6.453 -4.703 C 6.453 -4 6.188 -2.453 5.203 -1.234 C 4.719 -0.625 3.906 -0.047 3.078 -0.047 Z M 3.078 -0.047 " /></symbol><symbol overflow="visible" id="f1_glyph0-5"><path style="stroke:none;" d="M 1.766 -1.141 C 1.375 -0.469 0.984 -0.344 0.562 -0.312 C 0.438 -0.297 0.344 -0.297 0.344 -0.109 C 0.344 -0.047 0.391 0 0.469 0 C 0.75 0 1.047 -0.031 1.328 -0.031 C 1.656 -0.031 2 0 2.312 0 C 2.375 0 2.5 0 2.5 -0.188 C 2.5 -0.297 2.422 -0.312 2.344 -0.312 C 2.125 -0.328 1.875 -0.406 1.875 -0.656 C 1.875 -0.766 1.938 -0.875 2.016 -1.016 L 2.781 -2.281 L 5.266 -2.281 C 5.281 -2.078 5.422 -0.734 5.422 -0.641 C 5.422 -0.344 4.906 -0.312 4.703 -0.312 C 4.562 -0.312 4.469 -0.312 4.469 -0.109 C 4.469 0 4.594 0 4.609 0 C 5.016 0 5.438 -0.031 5.844 -0.031 C 6.094 -0.031 6.719 0 6.969 0 C 7.031 0 7.141 0 7.141 -0.203 C 7.141 -0.312 7.047 -0.312 6.922 -0.312 C 6.297 -0.312 6.297 -0.375 6.266 -0.656 L 5.672 -6.859 C 5.641 -7.047 5.641 -7.094 5.484 -7.094 C 5.312 -7.094 5.281 -7.031 5.219 -6.922 Z M 2.969 -2.594 L 4.906 -5.859 L 5.234 -2.594 Z M 2.969 -2.594 " /></symbol><symbol overflow="visible" id="f1_glyph0-6"><path style="stroke:none;" d="M 1.578 -0.766 C 1.484 -0.391 1.469 -0.312 0.688 -0.312 C 0.516 -0.312 0.422 -0.312 0.422 -0.109 C 0.422 0 0.5 0 0.688 0 L 4.219 0 C 5.781 0 6.953 -1.172 6.953 -2.141 C 6.953 -2.859 6.375 -3.422 5.422 -3.531 C 6.453 -3.719 7.484 -4.453 7.484 -5.406 C 7.484 -6.125 6.828 -6.766 5.641 -6.766 L 2.312 -6.766 C 2.125 -6.766 2.031 -6.766 2.031 -6.562 C 2.031 -6.453 2.125 -6.453 2.312 -6.453 C 2.328 -6.453 2.516 -6.453 2.688 -6.438 C 2.859 -6.422 2.953 -6.406 2.953 -6.281 C 2.953 -6.234 2.938 -6.219 2.906 -6.094 Z M 3.078 -3.625 L 3.688 -6.078 C 3.781 -6.422 3.797 -6.453 4.234 -6.453 L 5.516 -6.453 C 6.375 -6.453 6.594 -5.875 6.594 -5.438 C 6.594 -4.562 5.734 -3.625 4.531 -3.625 Z M 2.641 -0.312 C 2.5 -0.312 2.484 -0.312 2.422 -0.312 C 2.312 -0.328 2.281 -0.344 2.281 -0.422 C 2.281 -0.453 2.281 -0.469 2.344 -0.641 L 3.016 -3.406 L 4.891 -3.406 C 5.844 -3.406 6.031 -2.672 6.031 -2.25 C 6.031 -1.266 5.156 -0.312 3.984 -0.312 Z M 2.641 -0.312 " /></symbol><symbol overflow="visible" id="f1_glyph0-7"><path style="stroke:none;" d="M 7.531 -6.891 C 7.531 -6.922 7.516 -6.984 7.422 -6.984 C 7.391 -6.984 7.375 -6.969 7.266 -6.859 L 6.578 -6.109 C 6.484 -6.234 6.031 -6.984 4.938 -6.984 C 2.719 -6.984 0.5 -4.797 0.5 -2.5 C 0.5 -0.859 1.672 0.219 3.188 0.219 C 4.047 0.219 4.797 -0.172 5.312 -0.641 C 6.234 -1.453 6.406 -2.344 6.406 -2.375 C 6.406 -2.484 6.312 -2.484 6.297 -2.484 C 6.234 -2.484 6.188 -2.453 6.156 -2.375 C 6.078 -2.094 5.844 -1.391 5.156 -0.812 C 4.484 -0.25 3.859 -0.094 3.344 -0.094 C 2.453 -0.094 1.391 -0.609 1.391 -2.156 C 1.391 -2.719 1.609 -4.312 2.594 -5.484 C 3.203 -6.188 4.125 -6.672 5.016 -6.672 C 6.016 -6.672 6.609 -5.906 6.609 -4.766 C 6.609 -4.375 6.578 -4.359 6.578 -4.266 C 6.578 -4.156 6.688 -4.156 6.719 -4.156 C 6.859 -4.156 6.859 -4.188 6.906 -4.359 Z M 7.531 -6.891 " /></symbol><symbol overflow="visible" id="f1_glyph1-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f1_glyph1-1"><path style="stroke:none;" d="M 2.016 -3.281 C 2.062 -3.391 2.078 -3.453 2.078 -3.5 C 2.078 -3.719 1.875 -3.875 1.672 -3.875 C 1.406 -3.875 1.312 -3.656 1.281 -3.547 L 0.375 -0.547 C 0.359 -0.531 0.328 -0.438 0.328 -0.438 C 0.328 -0.359 0.547 -0.281 0.609 -0.281 C 0.656 -0.281 0.656 -0.297 0.703 -0.406 Z M 2.016 -3.281 " /></symbol></g></defs><g id="f1_surface1"><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 168.871 -98.323 L 200.607 -98.323" transform="matrix(0.995006,0,0,-0.995006,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 201.59 97.832 L 198.418 96.246 L 199.605 97.832 L 198.418 99.422 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-1" x="198.979" y="106.181" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 29.97 -138.01 L 11.534 -156.445" transform="matrix(0.995006,0,0,-0.995006,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 10.074 157.066 L 13.441 155.941 L 11.477 155.664 L 11.195 153.699 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-2" x="7.243" y="165.412" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 69.653 -38.795 L 69.653 -11.024" transform="matrix(0.995006,0,0,-0.995006,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 69.305 8.988 L 67.719 12.16 L 69.305 10.969 L 70.891 12.16 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-3" x="60.18" y="11.123" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 29.966 -78.482 L 29.97 -138.01 L 129.184 -138.013 L 168.871 -98.323 L 168.871 -38.795 L 69.653 -38.795 L 29.966 -78.482 L 129.184 -78.482 L 168.871 -38.795 M 129.184 -138.013 L 129.184 -78.482" transform="matrix(0.995006,0,0,-0.995006,0,0)" /><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-dasharray:2.98883,2.98883;stroke-miterlimit:10;" d="M 69.653 -38.795 L 69.653 -98.323 L 29.97 -138.01 M 69.653 -98.323 L 168.871 -98.323" transform="matrix(0.995006,0,0,-0.995006,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 70 97.832 C 70 97.449 69.691 97.141 69.305 97.141 C 68.922 97.141 68.613 97.449 68.613 97.832 C 68.613 98.219 68.922 98.527 69.305 98.527 C 69.691 98.527 70 98.219 70 97.832 Z M 70 97.832 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-4" x="65.388" y="113.066" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 30.512 137.32 C 30.512 136.938 30.203 136.629 29.82 136.629 C 29.434 136.629 29.125 136.938 29.125 137.32 C 29.125 137.703 29.434 138.016 29.82 138.016 C 30.203 138.016 30.512 137.703 30.512 137.32 Z M 30.512 137.32 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-5" x="14.256" y="140.708" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 129.234 137.324 C 129.234 136.938 128.922 136.629 128.539 136.629 C 128.156 136.629 127.844 136.938 127.844 137.324 C 127.844 137.707 128.156 138.016 128.539 138.016 C 128.922 138.016 129.234 137.707 129.234 137.324 Z M 129.234 137.324 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-6" x="128.582" y="151.84" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 168.719 97.832 C 168.719 97.449 168.41 97.141 168.027 97.141 C 167.645 97.141 167.332 97.449 167.332 97.832 C 167.332 98.219 167.645 98.527 168.027 98.527 C 168.41 98.527 168.719 98.219 168.719 97.832 Z M 168.719 97.832 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-7" x="173.202" y="93.606" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 70 38.602 C 70 38.219 69.691 37.91 69.305 37.91 C 68.922 37.91 68.613 38.219 68.613 38.602 C 68.613 38.984 68.922 39.297 69.305 39.297 C 69.691 39.297 70 38.984 70 38.602 Z M 70 38.602 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-4" x="73.072" y="34.715" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="80.908" y="31.118" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 30.512 78.09 C 30.512 77.707 30.199 77.395 29.816 77.395 C 29.434 77.395 29.125 77.707 29.125 78.09 C 29.125 78.473 29.434 78.785 29.816 78.785 C 30.199 78.785 30.512 78.473 30.512 78.09 Z M 30.512 78.09 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-5" x="12.864" y="81.816" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="20.298" y="78.218" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 129.234 78.09 C 129.234 77.707 128.922 77.395 128.539 77.395 C 128.156 77.395 127.848 77.707 127.848 78.09 C 127.848 78.473 128.156 78.785 128.539 78.785 C 128.922 78.785 129.234 78.473 129.234 78.09 Z M 129.234 78.09 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-6" x="134.806" y="79.76" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="142.822" y="76.162" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 168.723 38.602 C 168.723 38.219 168.41 37.906 168.027 37.906 C 167.645 37.906 167.336 38.219 167.336 38.602 C 167.336 38.984 167.645 39.297 168.027 39.297 C 168.41 39.297 168.723 38.984 168.723 38.602 Z M 168.723 38.602 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-7" x="173.871" y="38.276" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="181.665" y="34.679" /></g></g></svg></div></div></div></div></div><div class="options"><label><input type="radio" name="P1_Cau_6" value="A"> <b>A.</b> $\overrightarrow{A'C}=(5 ;-4 ; 4)$</label><label><input type="radio" name="P1_Cau_6" value="B"> <b>B.</b> $\overrightarrow{A'C}=(5 ; 4 ; 4)$</label><label><input type="radio" name="P1_Cau_6" value="C"> <b>C.</b> $\overrightarrow{A'C}=(-5 ; 4 ; 0)$</label><label><input type="radio" name="P1_Cau_6" value="D"> <b>D.</b> $\overrightarrow{A'C}=(-5 ; 4 ;-4)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Vì $A'$ là hình chiếu vuông góc của điểm $B'(5;4;4)$ lên mặt phẳng $(Oxz)$ nên $A'(5 ; 0 ; 4)$.</li><li>Vì $C$ là hình chiếu vuông góc của điểm $B'(5;4;4)$ lên trục $Oy$ nên $C(0 ; 4 ; 0)$.</li><li>Suy ra tọa độ của vectơ $\overrightarrow{A'C} = (0-5; 4-0; 0-4) = (-5 ; 4 ;-4)$.</li></ul> <b>Vậy</b> $\overrightarrow{A'C}=(-5 ; 4 ;-4)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Cho hai vectơ $\overrightarrow{a}$, $\overrightarrow{b}$ thỏa mãn $\left|\overrightarrow{a}\right|=26$; $\left|\overrightarrow{b}\right|=28$; $\left|\overrightarrow{a}+\overrightarrow{b}\right|=48$. Độ dài vectơ $\overrightarrow{a}-\overrightarrow{b}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_7" value="A"> <b>A.</b> $25$</label><label><input type="radio" name="P1_Cau_7" value="B"> <b>B.</b> $\sqrt{616}$</label><label><input type="radio" name="P1_Cau_7" value="C"> <b>C.</b> $9$</label><label><input type="radio" name="P1_Cau_7" value="D"> <b>D.</b> $\sqrt{618}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có: \[
+			\begin{aligned}
+				\left|\overrightarrow{a}-\overrightarrow{b}\right|^2 &amp;= \left(\overrightarrow{a}-\overrightarrow{b}\right)^2 = \left|\overrightarrow{a}\right|^2+\left|\overrightarrow{b}\right|^2-2\overrightarrow{a}\cdot\overrightarrow{b} \\
+				&amp;= 2\left(\left|\overrightarrow{a}\right|^2+\left|\overrightarrow{b}\right|^2\right)-\left(\overrightarrow{a}+\overrightarrow{b}\right)^2 \\
+				&amp;= 2\left(\left|\overrightarrow{a}\right|^2+\left|\overrightarrow{b}\right|^2\right)-\left|\overrightarrow{a}+\overrightarrow{b}\right|^2 \\
+				&amp;= 2\cdot\left(26^2+28^2\right)-48^2 = 616.
+			\end{aligned}
+			\]</li><li>Suy ra $\left|\overrightarrow{a}-\overrightarrow{b}\right|=\sqrt{616}$.</li></ul> <b>Vậy</b> Độ dài vectơ $\overrightarrow{a}-\overrightarrow{b}$ bằng $\sqrt{616}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Cho tứ diện $ABCD$. Đặt $\overrightarrow{AB}=\overrightarrow{a}$, $\overrightarrow{AC}=\overrightarrow{b}$, $\overrightarrow{AD}=\overrightarrow{c}$. Gọi $G$ là trọng tâm tam giác $BCD$. Đẳng thức nào sau đây đúng?</div><div class="tp"><div class="center"><div class="tp"><div class="table-responsive figure" style="text-align:center;margin:10px 0"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="124.117pt" height="116.478pt" viewBox="0 0 124.117 116.478" version="1.2"><defs><g><symbol overflow="visible" id="f2_glyph0-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f2_glyph0-1"><path style="stroke:none;" d="M 1.766 -1.141 C 1.375 -0.469 0.984 -0.344 0.547 -0.312 C 0.438 -0.297 0.344 -0.297 0.344 -0.109 C 0.344 -0.047 0.391 0 0.469 0 C 0.734 0 1.047 -0.031 1.328 -0.031 C 1.656 -0.031 2 0 2.312 0 C 2.375 0 2.5 0 2.5 -0.188 C 2.5 -0.297 2.406 -0.312 2.344 -0.312 C 2.109 -0.328 1.875 -0.406 1.875 -0.656 C 1.875 -0.766 1.938 -0.875 2.016 -1.016 L 2.766 -2.281 L 5.25 -2.281 C 5.266 -2.078 5.406 -0.734 5.406 -0.641 C 5.406 -0.344 4.891 -0.312 4.703 -0.312 C 4.562 -0.312 4.453 -0.312 4.453 -0.109 C 4.453 0 4.578 0 4.594 0 C 5 0 5.438 -0.031 5.828 -0.031 C 6.078 -0.031 6.703 0 6.953 0 C 7.016 0 7.125 0 7.125 -0.203 C 7.125 -0.312 7.031 -0.312 6.906 -0.312 C 6.297 -0.312 6.297 -0.375 6.266 -0.656 L 5.656 -6.844 C 5.641 -7.047 5.641 -7.078 5.469 -7.078 C 5.312 -7.078 5.266 -7.016 5.219 -6.906 Z M 2.953 -2.594 L 4.906 -5.859 L 5.219 -2.594 Z M 2.953 -2.594 " /></symbol><symbol overflow="visible" id="f2_glyph0-2"><path style="stroke:none;" d="M 1.578 -0.766 C 1.484 -0.391 1.469 -0.312 0.688 -0.312 C 0.516 -0.312 0.422 -0.312 0.422 -0.109 C 0.422 0 0.5 0 0.688 0 L 4.219 0 C 5.781 0 6.938 -1.172 6.938 -2.141 C 6.938 -2.844 6.375 -3.422 5.406 -3.531 C 6.438 -3.719 7.484 -4.453 7.484 -5.391 C 7.484 -6.125 6.828 -6.75 5.641 -6.75 L 2.312 -6.75 C 2.125 -6.75 2.031 -6.75 2.031 -6.562 C 2.031 -6.453 2.109 -6.453 2.297 -6.453 C 2.328 -6.453 2.516 -6.453 2.688 -6.422 C 2.859 -6.406 2.953 -6.406 2.953 -6.266 C 2.953 -6.234 2.938 -6.203 2.906 -6.078 Z M 3.078 -3.625 L 3.688 -6.078 C 3.781 -6.422 3.797 -6.453 4.219 -6.453 L 5.5 -6.453 C 6.375 -6.453 6.578 -5.859 6.578 -5.438 C 6.578 -4.562 5.734 -3.625 4.516 -3.625 Z M 2.625 -0.312 C 2.5 -0.312 2.469 -0.312 2.406 -0.312 C 2.312 -0.328 2.281 -0.344 2.281 -0.422 C 2.281 -0.438 2.281 -0.469 2.328 -0.641 L 3.016 -3.406 L 4.891 -3.406 C 5.828 -3.406 6.016 -2.672 6.016 -2.25 C 6.016 -1.266 5.141 -0.312 3.969 -0.312 Z M 2.625 -0.312 " /></symbol><symbol overflow="visible" id="f2_glyph0-3"><path style="stroke:none;" d="M 7.516 -6.875 C 7.516 -6.906 7.5 -6.969 7.406 -6.969 C 7.375 -6.969 7.375 -6.969 7.266 -6.859 L 6.562 -6.094 C 6.484 -6.234 6.016 -6.969 4.922 -6.969 C 2.719 -6.969 0.5 -4.781 0.5 -2.5 C 0.5 -0.859 1.656 0.219 3.172 0.219 C 4.031 0.219 4.781 -0.172 5.312 -0.641 C 6.234 -1.438 6.406 -2.344 6.406 -2.375 C 6.406 -2.469 6.297 -2.469 6.281 -2.469 C 6.219 -2.469 6.172 -2.453 6.156 -2.375 C 6.062 -2.094 5.828 -1.391 5.156 -0.812 C 4.469 -0.25 3.844 -0.094 3.328 -0.094 C 2.438 -0.094 1.391 -0.609 1.391 -2.141 C 1.391 -2.703 1.609 -4.312 2.594 -5.469 C 3.188 -6.172 4.125 -6.672 5 -6.672 C 6.016 -6.672 6.594 -5.906 6.594 -4.75 C 6.594 -4.359 6.562 -4.359 6.562 -4.25 C 6.562 -4.156 6.672 -4.156 6.719 -4.156 C 6.844 -4.156 6.844 -4.172 6.891 -4.359 Z M 7.516 -6.875 " /></symbol><symbol overflow="visible" id="f2_glyph0-4"><path style="stroke:none;" d="M 1.578 -0.766 C 1.469 -0.391 1.453 -0.312 0.672 -0.312 C 0.5 -0.312 0.391 -0.312 0.391 -0.125 C 0.391 0 0.484 0 0.672 0 L 3.953 0 C 6 0 7.953 -2.094 7.953 -4.25 C 7.953 -5.641 7.109 -6.75 5.625 -6.75 L 2.297 -6.75 C 2.109 -6.75 2 -6.75 2 -6.562 C 2 -6.453 2.094 -6.453 2.297 -6.453 C 2.422 -6.453 2.594 -6.438 2.719 -6.422 C 2.875 -6.406 2.938 -6.375 2.938 -6.266 C 2.938 -6.234 2.922 -6.203 2.891 -6.078 Z M 3.703 -6.078 C 3.797 -6.422 3.812 -6.453 4.25 -6.453 L 5.297 -6.453 C 6.266 -6.453 7.094 -5.922 7.094 -4.625 C 7.094 -4.141 6.891 -2.516 6.047 -1.422 C 5.766 -1.062 4.984 -0.312 3.766 -0.312 L 2.656 -0.312 C 2.516 -0.312 2.5 -0.312 2.438 -0.312 C 2.328 -0.328 2.297 -0.344 2.297 -0.422 C 2.297 -0.438 2.297 -0.469 2.359 -0.641 Z M 3.703 -6.078 " /></symbol><symbol overflow="visible" id="f2_glyph0-5"><path style="stroke:none;" d="M 7.516 -6.875 C 7.516 -6.906 7.5 -6.969 7.406 -6.969 C 7.375 -6.969 7.375 -6.969 7.266 -6.859 L 6.562 -6.094 C 6.484 -6.234 6.016 -6.969 4.922 -6.969 C 2.719 -6.969 0.5 -4.781 0.5 -2.5 C 0.5 -0.922 1.594 0.219 3.188 0.219 C 3.625 0.219 4.078 0.125 4.438 -0.016 C 4.922 -0.219 5.109 -0.422 5.297 -0.625 C 5.375 -0.375 5.641 -0.016 5.734 -0.016 C 5.781 -0.016 5.812 -0.047 5.812 -0.047 C 5.828 -0.062 5.922 -0.438 5.969 -0.656 L 6.156 -1.422 C 6.203 -1.578 6.25 -1.75 6.297 -1.922 C 6.406 -2.359 6.406 -2.391 6.969 -2.391 C 7.016 -2.391 7.125 -2.406 7.125 -2.594 C 7.125 -2.656 7.078 -2.703 7 -2.703 C 6.781 -2.703 6.188 -2.672 5.969 -2.672 C 5.656 -2.672 4.891 -2.703 4.578 -2.703 C 4.484 -2.703 4.375 -2.703 4.375 -2.5 C 4.375 -2.391 4.453 -2.391 4.672 -2.391 C 4.672 -2.391 4.969 -2.391 5.188 -2.375 C 5.453 -2.344 5.5 -2.312 5.5 -2.188 C 5.5 -2.094 5.391 -1.656 5.297 -1.281 C 5.016 -0.203 3.734 -0.094 3.375 -0.094 C 2.438 -0.094 1.391 -0.656 1.391 -2.172 C 1.391 -2.469 1.5 -4.109 2.531 -5.391 C 3.062 -6.062 4.031 -6.672 5 -6.672 C 6.016 -6.672 6.594 -5.906 6.594 -4.75 C 6.594 -4.359 6.562 -4.359 6.562 -4.25 C 6.562 -4.156 6.672 -4.156 6.719 -4.156 C 6.844 -4.156 6.844 -4.172 6.891 -4.359 Z M 7.516 -6.875 " /></symbol><symbol overflow="visible" id="f2_glyph0-6"><path style="stroke:none;" d="M 9.156 -6 C 9.25 -6.344 9.266 -6.453 10.016 -6.453 C 10.234 -6.453 10.328 -6.453 10.328 -6.641 C 10.328 -6.75 10.234 -6.75 10.062 -6.75 L 8.75 -6.75 C 8.5 -6.75 8.484 -6.75 8.375 -6.562 L 4.75 -0.938 L 3.984 -6.531 C 3.953 -6.75 3.938 -6.75 3.672 -6.75 L 2.328 -6.75 C 2.141 -6.75 2.031 -6.75 2.031 -6.562 C 2.031 -6.453 2.109 -6.453 2.312 -6.453 C 2.438 -6.453 2.625 -6.438 2.734 -6.422 C 2.891 -6.406 2.953 -6.375 2.953 -6.266 C 2.953 -6.234 2.953 -6.203 2.922 -6.078 L 1.656 -1.047 C 1.562 -0.656 1.391 -0.344 0.594 -0.312 C 0.547 -0.312 0.422 -0.297 0.422 -0.125 C 0.422 -0.031 0.469 0 0.547 0 C 0.875 0 1.219 -0.031 1.547 -0.031 C 1.875 -0.031 2.234 0 2.562 0 C 2.609 0 2.734 0 2.734 -0.203 C 2.734 -0.312 2.625 -0.312 2.562 -0.312 C 2 -0.312 1.891 -0.516 1.891 -0.734 C 1.891 -0.812 1.906 -0.859 1.922 -0.969 L 3.281 -6.359 L 4.141 -0.234 C 4.156 -0.109 4.156 0 4.281 0 C 4.391 0 4.453 -0.109 4.5 -0.172 L 8.5 -6.438 L 7.094 -0.766 C 7 -0.391 6.969 -0.312 6.188 -0.312 C 6.016 -0.312 5.922 -0.312 5.922 -0.125 C 5.922 0 6.031 0 6.062 0 C 6.344 0 7.016 -0.031 7.297 -0.031 C 7.688 -0.031 8.125 0 8.531 0 C 8.578 0 8.719 0 8.719 -0.203 C 8.719 -0.312 8.625 -0.312 8.438 -0.312 C 8.078 -0.312 7.797 -0.312 7.797 -0.484 C 7.797 -0.531 7.797 -0.547 7.844 -0.719 Z M 9.156 -6 " /></symbol></g></defs><g id="f2_surface1"><path style="fill:none;stroke-width:0.3985;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 49.187 -18.95 L 19.422 -70.502 L 51.992 -97.836 L 104.461 -70.502 L 49.187 -18.95 L 51.992 -97.836" transform="matrix(0.992936,0,0,-0.992936,0,0)" /><path style="fill:none;stroke-width:0.3985;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-dasharray:2.98883,2.98883;stroke-miterlimit:10;" d="M 19.422 -70.502 L 104.461 -70.502 M 49.187 -18.95 L 58.625 -79.613 M 19.422 -70.502 L 78.228 -84.169" transform="matrix(0.992936,0,0,-0.992936,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 49.828 18.816 C 49.828 18.27 49.383 17.828 48.84 17.828 C 48.293 17.828 47.848 18.27 47.848 18.816 C 47.848 19.363 48.293 19.805 48.84 19.805 C 49.383 19.805 49.828 19.363 49.828 18.816 Z M 49.828 18.816 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-1" x="45.128" y="13.752" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 20.273 70.004 C 20.273 69.457 19.832 69.016 19.285 69.016 C 18.738 69.016 18.297 69.457 18.297 70.004 C 18.297 70.551 18.738 70.992 19.285 70.992 C 19.832 70.992 20.273 70.551 20.273 70.004 Z M 20.273 70.004 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-2" x="6.84" y="73.384" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 52.617 97.145 C 52.617 96.598 52.172 96.152 51.625 96.152 C 51.082 96.152 50.637 96.598 50.637 97.145 C 50.637 97.688 51.082 98.133 51.625 98.133 C 52.172 98.133 52.617 97.688 52.617 97.145 Z M 52.617 97.145 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-3" x="47.737" y="108.967" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 104.715 70.004 C 104.715 69.457 104.27 69.016 103.723 69.016 C 103.18 69.016 102.734 69.457 102.734 70.004 C 102.734 70.551 103.18 70.992 103.723 70.992 C 104.27 70.992 104.715 70.551 104.715 70.004 Z M 104.715 70.004 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-4" x="107.935" y="73.384" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 59.199 79.051 C 59.199 78.504 58.758 78.062 58.211 78.062 C 57.664 78.062 57.223 78.504 57.223 79.051 C 57.223 79.598 57.664 80.039 58.211 80.039 C 58.758 80.039 59.199 79.598 59.199 79.051 Z M 59.199 79.051 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-5" x="54.322" y="90.875" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 78.664 83.574 C 78.664 83.027 78.223 82.586 77.676 82.586 C 77.129 82.586 76.688 83.027 76.688 83.574 C 76.688 84.121 77.129 84.562 77.676 84.562 C 78.223 84.562 78.664 84.121 78.664 83.574 Z M 78.664 83.574 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f2_glyph0-6" x="80.271" y="89.841" /></g></g></svg></div></div></div></div></div><div class="options"><label><input type="radio" name="P1_Cau_8" value="A"> <b>A.</b> $\overrightarrow{AG}=\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}$</label><label><input type="radio" name="P1_Cau_8" value="B"> <b>B.</b> $\overrightarrow{AG}=\dfrac{1}{3}\left(\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}\right)$</label><label><input type="radio" name="P1_Cau_8" value="C"> <b>C.</b> $\overrightarrow{AG}=\dfrac{1}{2}\left(\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}\right)$</label><label><input type="radio" name="P1_Cau_8" value="D"> <b>D.</b> $\overrightarrow{AG}=\dfrac{1}{4}\left(\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}\right)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Gọi $M$ là trung điểm của $CD$, suy ra $\overrightarrow{BG}=\dfrac{2}{3}\overrightarrow{BM}$.</li><li>Mặt khác, ta có: \[
+				\begin{aligned}
+					\overrightarrow{AG} &amp;= \overrightarrow{AB}+\overrightarrow{BG} = \overrightarrow{AB}+\dfrac{2}{3}\overrightarrow{BM} \\
+					&amp;= \overrightarrow{AB}+\dfrac{2}{3}\cdot\dfrac{1}{2}\left(\overrightarrow{BC}+\overrightarrow{BD}\right) \\
+					&amp;= \overrightarrow{AB}+\dfrac{1}{3}\left(\overrightarrow{AC}-\overrightarrow{AB}+\overrightarrow{AD}-\overrightarrow{AB}\right) \\
+					&amp;= \dfrac{1}{3}\left(\overrightarrow{AB}+\overrightarrow{AC}+\overrightarrow{AD}\right) = \dfrac{1}{3}\left(\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}\right).
+				\end{aligned}
+				\]</li></ul> <b>Vậy</b> Đẳng thức đúng là $\overrightarrow{AG}=\dfrac{1}{3}\left(\overrightarrow{a}+\overrightarrow{b}+\overrightarrow{c}\right)$.</div><div class="tp"><div class="center"><div class="tp"><div class="table-responsive figure" style="text-align:center;margin:10px 0"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="124.117pt" height="116.478pt" viewBox="0 0 124.117 116.478" version="1.2"><defs><g><symbol overflow="visible" id="f3_glyph0-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f3_glyph0-1"><path style="stroke:none;" d="M 1.766 -1.141 C 1.375 -0.469 0.984 -0.344 0.547 -0.312 C 0.438 -0.297 0.344 -0.297 0.344 -0.109 C 0.344 -0.047 0.391 0 0.469 0 C 0.734 0 1.047 -0.031 1.328 -0.031 C 1.656 -0.031 2 0 2.312 0 C 2.375 0 2.5 0 2.5 -0.188 C 2.5 -0.297 2.406 -0.312 2.344 -0.312 C 2.109 -0.328 1.875 -0.406 1.875 -0.656 C 1.875 -0.766 1.938 -0.875 2.016 -1.016 L 2.766 -2.281 L 5.25 -2.281 C 5.266 -2.078 5.406 -0.734 5.406 -0.641 C 5.406 -0.344 4.891 -0.312 4.703 -0.312 C 4.562 -0.312 4.453 -0.312 4.453 -0.109 C 4.453 0 4.578 0 4.594 0 C 5 0 5.438 -0.031 5.828 -0.031 C 6.078 -0.031 6.703 0 6.953 0 C 7.016 0 7.125 0 7.125 -0.203 C 7.125 -0.312 7.031 -0.312 6.906 -0.312 C 6.297 -0.312 6.297 -0.375 6.266 -0.656 L 5.656 -6.844 C 5.641 -7.047 5.641 -7.078 5.469 -7.078 C 5.312 -7.078 5.266 -7.016 5.219 -6.906 Z M 2.953 -2.594 L 4.906 -5.859 L 5.219 -2.594 Z M 2.953 -2.594 " /></symbol><symbol overflow="visible" id="f3_glyph0-2"><path style="stroke:none;" d="M 1.578 -0.766 C 1.484 -0.391 1.469 -0.312 0.688 -0.312 C 0.516 -0.312 0.422 -0.312 0.422 -0.109 C 0.422 0 0.5 0 0.688 0 L 4.219 0 C 5.781 0 6.938 -1.172 6.938 -2.141 C 6.938 -2.844 6.375 -3.422 5.406 -3.531 C 6.438 -3.719 7.484 -4.453 7.484 -5.391 C 7.484 -6.125 6.828 -6.75 5.641 -6.75 L 2.312 -6.75 C 2.125 -6.75 2.031 -6.75 2.031 -6.562 C 2.031 -6.453 2.109 -6.453 2.297 -6.453 C 2.328 -6.453 2.516 -6.453 2.688 -6.422 C 2.859 -6.406 2.953 -6.406 2.953 -6.266 C 2.953 -6.234 2.938 -6.203 2.906 -6.078 Z M 3.078 -3.625 L 3.688 -6.078 C 3.781 -6.422 3.797 -6.453 4.219 -6.453 L 5.5 -6.453 C 6.375 -6.453 6.578 -5.859 6.578 -5.438 C 6.578 -4.562 5.734 -3.625 4.516 -3.625 Z M 2.625 -0.312 C 2.5 -0.312 2.469 -0.312 2.406 -0.312 C 2.312 -0.328 2.281 -0.344 2.281 -0.422 C 2.281 -0.438 2.281 -0.469 2.328 -0.641 L 3.016 -3.406 L 4.891 -3.406 C 5.828 -3.406 6.016 -2.672 6.016 -2.25 C 6.016 -1.266 5.141 -0.312 3.969 -0.312 Z M 2.625 -0.312 " /></symbol><symbol overflow="visible" id="f3_glyph0-3"><path style="stroke:none;" d="M 7.516 -6.875 C 7.516 -6.906 7.5 -6.969 7.406 -6.969 C 7.375 -6.969 7.375 -6.969 7.266 -6.859 L 6.562 -6.094 C 6.484 -6.234 6.016 -6.969 4.922 -6.969 C 2.719 -6.969 0.5 -4.781 0.5 -2.5 C 0.5 -0.859 1.656 0.219 3.172 0.219 C 4.031 0.219 4.781 -0.172 5.312 -0.641 C 6.234 -1.438 6.406 -2.344 6.406 -2.375 C 6.406 -2.469 6.297 -2.469 6.281 -2.469 C 6.219 -2.469 6.172 -2.453 6.156 -2.375 C 6.062 -2.094 5.828 -1.391 5.156 -0.812 C 4.469 -0.25 3.844 -0.094 3.328 -0.094 C 2.438 -0.094 1.391 -0.609 1.391 -2.141 C 1.391 -2.703 1.609 -4.312 2.594 -5.469 C 3.188 -6.172 4.125 -6.672 5 -6.672 C 6.016 -6.672 6.594 -5.906 6.594 -4.75 C 6.594 -4.359 6.562 -4.359 6.562 -4.25 C 6.562 -4.156 6.672 -4.156 6.719 -4.156 C 6.844 -4.156 6.844 -4.172 6.891 -4.359 Z M 7.516 -6.875 " /></symbol><symbol overflow="visible" id="f3_glyph0-4"><path style="stroke:none;" d="M 1.578 -0.766 C 1.469 -0.391 1.453 -0.312 0.672 -0.312 C 0.5 -0.312 0.391 -0.312 0.391 -0.125 C 0.391 0 0.484 0 0.672 0 L 3.953 0 C 6 0 7.953 -2.094 7.953 -4.25 C 7.953 -5.641 7.109 -6.75 5.625 -6.75 L 2.297 -6.75 C 2.109 -6.75 2 -6.75 2 -6.562 C 2 -6.453 2.094 -6.453 2.297 -6.453 C 2.422 -6.453 2.594 -6.438 2.719 -6.422 C 2.875 -6.406 2.938 -6.375 2.938 -6.266 C 2.938 -6.234 2.922 -6.203 2.891 -6.078 Z M 3.703 -6.078 C 3.797 -6.422 3.812 -6.453 4.25 -6.453 L 5.297 -6.453 C 6.266 -6.453 7.094 -5.922 7.094 -4.625 C 7.094 -4.141 6.891 -2.516 6.047 -1.422 C 5.766 -1.062 4.984 -0.312 3.766 -0.312 L 2.656 -0.312 C 2.516 -0.312 2.5 -0.312 2.438 -0.312 C 2.328 -0.328 2.297 -0.344 2.297 -0.422 C 2.297 -0.438 2.297 -0.469 2.359 -0.641 Z M 3.703 -6.078 " /></symbol><symbol overflow="visible" id="f3_glyph0-5"><path style="stroke:none;" d="M 7.516 -6.875 C 7.516 -6.906 7.5 -6.969 7.406 -6.969 C 7.375 -6.969 7.375 -6.969 7.266 -6.859 L 6.562 -6.094 C 6.484 -6.234 6.016 -6.969 4.922 -6.969 C 2.719 -6.969 0.5 -4.781 0.5 -2.5 C 0.5 -0.922 1.594 0.219 3.188 0.219 C 3.625 0.219 4.078 0.125 4.438 -0.016 C 4.922 -0.219 5.109 -0.422 5.297 -0.625 C 5.375 -0.375 5.641 -0.016 5.734 -0.016 C 5.781 -0.016 5.812 -0.047 5.812 -0.047 C 5.828 -0.062 5.922 -0.438 5.969 -0.656 L 6.156 -1.422 C 6.203 -1.578 6.25 -1.75 6.297 -1.922 C 6.406 -2.359 6.406 -2.391 6.969 -2.391 C 7.016 -2.391 7.125 -2.406 7.125 -2.594 C 7.125 -2.656 7.078 -2.703 7 -2.703 C 6.781 -2.703 6.188 -2.672 5.969 -2.672 C 5.656 -2.672 4.891 -2.703 4.578 -2.703 C 4.484 -2.703 4.375 -2.703 4.375 -2.5 C 4.375 -2.391 4.453 -2.391 4.672 -2.391 C 4.672 -2.391 4.969 -2.391 5.188 -2.375 C 5.453 -2.344 5.5 -2.312 5.5 -2.188 C 5.5 -2.094 5.391 -1.656 5.297 -1.281 C 5.016 -0.203 3.734 -0.094 3.375 -0.094 C 2.438 -0.094 1.391 -0.656 1.391 -2.172 C 1.391 -2.469 1.5 -4.109 2.531 -5.391 C 3.062 -6.062 4.031 -6.672 5 -6.672 C 6.016 -6.672 6.594 -5.906 6.594 -4.75 C 6.594 -4.359 6.562 -4.359 6.562 -4.25 C 6.562 -4.156 6.672 -4.156 6.719 -4.156 C 6.844 -4.156 6.844 -4.172 6.891 -4.359 Z M 7.516 -6.875 " /></symbol><symbol overflow="visible" id="f3_glyph0-6"><path style="stroke:none;" d="M 9.156 -6 C 9.25 -6.344 9.266 -6.453 10.016 -6.453 C 10.234 -6.453 10.328 -6.453 10.328 -6.641 C 10.328 -6.75 10.234 -6.75 10.062 -6.75 L 8.75 -6.75 C 8.5 -6.75 8.484 -6.75 8.375 -6.562 L 4.75 -0.938 L 3.984 -6.531 C 3.953 -6.75 3.938 -6.75 3.672 -6.75 L 2.328 -6.75 C 2.141 -6.75 2.031 -6.75 2.031 -6.562 C 2.031 -6.453 2.109 -6.453 2.312 -6.453 C 2.438 -6.453 2.625 -6.438 2.734 -6.422 C 2.891 -6.406 2.953 -6.375 2.953 -6.266 C 2.953 -6.234 2.953 -6.203 2.922 -6.078 L 1.656 -1.047 C 1.562 -0.656 1.391 -0.344 0.594 -0.312 C 0.547 -0.312 0.422 -0.297 0.422 -0.125 C 0.422 -0.031 0.469 0 0.547 0 C 0.875 0 1.219 -0.031 1.547 -0.031 C 1.875 -0.031 2.234 0 2.562 0 C 2.609 0 2.734 0 2.734 -0.203 C 2.734 -0.312 2.625 -0.312 2.562 -0.312 C 2 -0.312 1.891 -0.516 1.891 -0.734 C 1.891 -0.812 1.906 -0.859 1.922 -0.969 L 3.281 -6.359 L 4.141 -0.234 C 4.156 -0.109 4.156 0 4.281 0 C 4.391 0 4.453 -0.109 4.5 -0.172 L 8.5 -6.438 L 7.094 -0.766 C 7 -0.391 6.969 -0.312 6.188 -0.312 C 6.016 -0.312 5.922 -0.312 5.922 -0.125 C 5.922 0 6.031 0 6.062 0 C 6.344 0 7.016 -0.031 7.297 -0.031 C 7.688 -0.031 8.125 0 8.531 0 C 8.578 0 8.719 0 8.719 -0.203 C 8.719 -0.312 8.625 -0.312 8.438 -0.312 C 8.078 -0.312 7.797 -0.312 7.797 -0.484 C 7.797 -0.531 7.797 -0.547 7.844 -0.719 Z M 9.156 -6 " /></symbol></g></defs><g id="f3_surface1"><path style="fill:none;stroke-width:0.3985;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 49.187 -18.95 L 19.422 -70.502 L 51.992 -97.836 L 104.461 -70.502 L 49.187 -18.95 L 51.992 -97.836" transform="matrix(0.992936,0,0,-0.992936,0,0)" /><path style="fill:none;stroke-width:0.3985;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-dasharray:2.98883,2.98883;stroke-miterlimit:10;" d="M 19.422 -70.502 L 104.461 -70.502 M 49.187 -18.95 L 58.625 -79.613 M 19.422 -70.502 L 78.228 -84.169" transform="matrix(0.992936,0,0,-0.992936,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 49.828 18.816 C 49.828 18.27 49.383 17.828 48.84 17.828 C 48.293 17.828 47.848 18.27 47.848 18.816 C 47.848 19.363 48.293 19.805 48.84 19.805 C 49.383 19.805 49.828 19.363 49.828 18.816 Z M 49.828 18.816 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-1" x="45.128" y="13.752" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 20.273 70.004 C 20.273 69.457 19.832 69.016 19.285 69.016 C 18.738 69.016 18.297 69.457 18.297 70.004 C 18.297 70.551 18.738 70.992 19.285 70.992 C 19.832 70.992 20.273 70.551 20.273 70.004 Z M 20.273 70.004 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-2" x="6.84" y="73.384" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 52.617 97.145 C 52.617 96.598 52.172 96.152 51.625 96.152 C 51.082 96.152 50.637 96.598 50.637 97.145 C 50.637 97.688 51.082 98.133 51.625 98.133 C 52.172 98.133 52.617 97.688 52.617 97.145 Z M 52.617 97.145 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-3" x="47.737" y="108.967" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 104.715 70.004 C 104.715 69.457 104.27 69.016 103.723 69.016 C 103.18 69.016 102.734 69.457 102.734 70.004 C 102.734 70.551 103.18 70.992 103.723 70.992 C 104.27 70.992 104.715 70.551 104.715 70.004 Z M 104.715 70.004 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-4" x="107.935" y="73.384" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 59.199 79.051 C 59.199 78.504 58.758 78.062 58.211 78.062 C 57.664 78.062 57.223 78.504 57.223 79.051 C 57.223 79.598 57.664 80.039 58.211 80.039 C 58.758 80.039 59.199 79.598 59.199 79.051 Z M 59.199 79.051 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-5" x="54.322" y="90.875" /></g><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 78.664 83.574 C 78.664 83.027 78.223 82.586 77.676 82.586 C 77.129 82.586 76.688 83.027 76.688 83.574 C 76.688 84.121 77.129 84.562 77.676 84.562 C 78.223 84.562 78.664 84.121 78.664 83.574 Z M 78.664 83.574 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f3_glyph0-6" x="80.271" y="89.841" /></g></g></svg></div></div></div></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{a}$ và $\overrightarrow{b}$ thỏa mãn $\left|\overrightarrow{a}\right| = 1$, $\left|\overrightarrow{b}\right| = 2$ và góc $\left(\overrightarrow{a}, \overrightarrow{b}\right) = 60^\circ$. Giá trị của biểu thức $\left(2\overrightarrow{a} + \overrightarrow{b}\right)\cdot\left(\overrightarrow{a} - \overrightarrow{b}\right)$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_9" value="A"> <b>A.</b> $3$</label><label><input type="radio" name="P1_Cau_9" value="B"> <b>B.</b> $-3$</label><label><input type="radio" name="P1_Cau_9" value="C"> <b>C.</b> $-1$</label><label><input type="radio" name="P1_Cau_9" value="D"> <b>D.</b> $1$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tính $\overrightarrow{a} \cdot \overrightarrow{b} = \left|\overrightarrow{a}\right| \cdot \left|\overrightarrow{b}\right| \cdot \cos 60^\circ = 1 \cdot 2 \cdot \dfrac{1}{2} = 1$.</li><li>Khai triển tích vô hướng: \[
+			\left(2\overrightarrow{a} + \overrightarrow{b}\right)\cdot\left(\overrightarrow{a} - \overrightarrow{b}\right) = 2\left|\overrightarrow{a}\right|^2 - 2\overrightarrow{a}\cdot\overrightarrow{b} + \overrightarrow{a}\cdot\overrightarrow{b} - \left|\overrightarrow{b}\right|^2 = 2\left|\overrightarrow{a}\right|^2 - \overrightarrow{a}\cdot\overrightarrow{b} - \left|\overrightarrow{b}\right|^2.
+			\]</li><li>Thay số: $2(1^2) - 1 - (2^2) = 2 - 1 - 4 = -3$.</li></ul> <b>Vậy</b> Giá trị của biểu thức bằng $-3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{a} = (1; 2; -2)$. Độ dài của vectơ $\overrightarrow{a}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_10" value="A"> <b>A.</b> $1$</label><label><input type="radio" name="P1_Cau_10" value="B"> <b>B.</b> $3$</label><label><input type="radio" name="P1_Cau_10" value="C"> <b>C.</b> $9$</label><label><input type="radio" name="P1_Cau_10" value="D"> <b>D.</b> $\sqrt{5}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Thay các tọa độ vào công thức tính độ dài: $\left|\overrightarrow{a}\right| = \sqrt{1^2 + 2^2 + (-2)^2} = \sqrt{1 + 4 + 4} = \sqrt{9} = 3$.</li></ul> <b>Vậy</b> Độ dài của vectơ $\overrightarrow{a}$ bằng $3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Trong không gian $Oxyz$, cho vectơ $\overrightarrow{a} = 2\overrightarrow{i} - 3\overrightarrow{j}$ và $\overrightarrow{b} = \overrightarrow{j} + 2\overrightarrow{k}$. Tọa độ của vectơ tổng $\overrightarrow{a} + \overrightarrow{b}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_11" value="A"> <b>A.</b> $(2; -2; 2)$</label><label><input type="radio" name="P1_Cau_11" value="B"> <b>B.</b> $(2; -3; 2)$</label><label><input type="radio" name="P1_Cau_11" value="C"> <b>C.</b> $(3; -2; 2)$</label><label><input type="radio" name="P1_Cau_11" value="D"> <b>D.</b> $(2; -4; 2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Xác định tọa độ các vectơ: $\overrightarrow{a} = (2; -3; 0)$ và $\overrightarrow{b} = (0; 1; 2)$.</li><li>Cộng các tọa độ tương ứng: $\overrightarrow{a} + \overrightarrow{b} = (2 + 0; -3 + 1; 0 + 2) = (2; -2; 2)$.</li></ul> <b>Vậy</b> Tọa độ của vectơ $\overrightarrow{a} + \overrightarrow{b}$ là $(2; -2; 2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Trong không gian $Oxyz$, cho hai điểm $A(2; -3; 1)$ và $B(1; -1; 3)$. Độ dài của vectơ $\overrightarrow{AB}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_12" value="A"> <b>A.</b> $\sqrt{41}$</label><label><input type="radio" name="P1_Cau_12" value="B"> <b>B.</b> $3$</label><label><input type="radio" name="P1_Cau_12" value="C"> <b>C.</b> $\sqrt{5}$</label><label><input type="radio" name="P1_Cau_12" value="D"> <b>D.</b> $\sqrt{29}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tọa độ vectơ $\overrightarrow{AB} = (1 - 2; -1 - (-3); 3 - 1) = (-1; 2; 2)$.</li><li>Độ dài: $\left|\overrightarrow{AB}\right| = \sqrt{(-1)^2 + 2^2 + 2^2} = \sqrt{1 + 4 + 4} = \sqrt{9} = 3$.</li></ul> <b>Vậy</b> Độ dài của vectơ $\overrightarrow{AB}$ bằng $3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Trong không gian $Oxyz$, cho tam giác $ABC$ biết $A(1; 2; 3)$, $B(-2; 0; 1)$ và trọng tâm $G(0; 1; 2)$. Tọa độ đỉnh $C$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_13" value="A"> <b>A.</b> $C(-1; 3; 6)$</label><label><input type="radio" name="P1_Cau_13" value="B"> <b>B.</b> $C(1; -1; 2)$</label><label><input type="radio" name="P1_Cau_13" value="C"> <b>C.</b> $C(1; 1; 2)$</label><label><input type="radio" name="P1_Cau_13" value="D"> <b>D.</b> $C\left(-\dfrac{1}{3}; 1; 2\right)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức trọng tâm tam giác: $x_C = 3 x_G - x_A - x_B = 3 \cdot 0 - 1 - (-2) = 1$; $y_C = 3 y_G - y_A - y_B = 3 \cdot 1 - 2 - 0 = 1$; $z_C = 3 z_G - z_A - z_B = 3 \cdot 2 - 3 - 1 = 2$.</li></ul> <b>Vậy</b> Tọa độ đỉnh $C$ là $C(1; 1; 2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{a} = (2; 3; -4)$ và $\overrightarrow{b} = (-1; 2; 1)$. Tọa độ của vectơ $\overrightarrow{u} = \overrightarrow{a} - 2\overrightarrow{b}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_14" value="A"> <b>A.</b> $(0; 7; -2)$</label><label><input type="radio" name="P1_Cau_14" value="B"> <b>B.</b> $(4; -1; -6)$</label><label><input type="radio" name="P1_Cau_14" value="C"> <b>C.</b> $(4; 7; -6)$</label><label><input type="radio" name="P1_Cau_14" value="D"> <b>D.</b> $(0; -1; -6)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tọa độ vectơ $\overrightarrow{u}$ được tính theo từng thành phần: $x_u = 2 - 2(-1) = 4$; $y_u = 3 - 2(2) = -1$; $z_u = -4 - 2(1) = -6$.</li></ul> <b>Vậy</b> Tọa độ vectơ $\overrightarrow{u}$ là $(4; -1; -6)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Trong không gian $Oxyz$, cho điểm $A(-1; 3; 2)$. Tọa độ điểm $A'$ đối xứng với $A$ qua trục hoành $Ox$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_15" value="A"> <b>A.</b> $A'(1; 3; 2)$</label><label><input type="radio" name="P1_Cau_15" value="B"> <b>B.</b> $A'(-1; -3; -2)$</label><label><input type="radio" name="P1_Cau_15" value="C"> <b>C.</b> $A'(1; -3; -2)$</label><label><input type="radio" name="P1_Cau_15" value="D"> <b>D.</b> $A'(-1; 3; -2)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Đối xứng qua trục $Ox$ thì hoành độ $x$ giữ nguyên, tung độ $y$ và cao độ $z$ đổi dấu.</li><li>Điểm $A(-1; 3; 2) \Rightarrow A'(-1; -3; -2)$.</li></ul> <b>Vậy</b> Tọa độ điểm $A'$ là $A'(-1; -3; -2)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 16:</b> Trong không gian $Oxyz$, cho hai vectơ $\overrightarrow{u} = (1; -2; 3)$ và $\overrightarrow{v} = (2; 1; -1)$. Tọa độ của vectơ $\overrightarrow{w} = 2\overrightarrow{u} - 3\overrightarrow{v}$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_16" value="A"> <b>A.</b> $\overrightarrow{w} = (-4; -7; 9)$</label><label><input type="radio" name="P1_Cau_16" value="B"> <b>B.</b> $\overrightarrow{w} = (4; 7; -9)$</label><label><input type="radio" name="P1_Cau_16" value="C"> <b>C.</b> $\overrightarrow{w} = (-4; -1; 3)$</label><label><input type="radio" name="P1_Cau_16" value="D"> <b>D.</b> $\overrightarrow{w} = (8; -1; 3)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Tính $2\overrightarrow{u} = (2; -4; 6)$ và $-3\overrightarrow{v} = (-6; -3; 3)$.</li><li>Cộng theo từng thành phần tọa độ: $x = 2 - 6 = -4$; $y = -4 - 3 = -7$; $z = 6 + 3 = 9$.</li></ul> <b>Vậy</b> Tọa độ vectơ $\overrightarrow{w} = (-4; -7; 9)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 17:</b> Trong không gian $Oxyz$, khoảng cách từ điểm $M(2; -3; 4)$ đến trục tung $Oy$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_17" value="A"> <b>A.</b> $3$</label><label><input type="radio" name="P1_Cau_17" value="B"> <b>B.</b> $5$</label><label><input type="radio" name="P1_Cau_17" value="C"> <b>C.</b> $2\sqrt{5}$</label><label><input type="radio" name="P1_Cau_17" value="D"> <b>D.</b> $\sqrt{29}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Hình chiếu vuông góc của $M(2; -3; 4)$ lên trục $Oy$ là $H(0; -3; 0)$.</li><li>Khoảng cách từ $M$ đến trục $Oy$ là: \[
+			d(M, Oy) = MH = \sqrt{(2 - 0)^2 + (-3 - (-3))^2 + (4 - 0)^2} = \sqrt{2^2 + 4^2} = \sqrt{20} = 2\sqrt{5}.
+			\]</li></ul> <b>Vậy</b> Khoảng cách từ $M$ đến trục $Oy$ bằng $2\sqrt{5}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 18:</b> Trong không gian $Oxyz$, cho bốn điểm $A(2; 0; 0)$, $B(0; 4; 0)$, $C(0; 0; 6)$ và $D(2; 4; 6)$. Tọa độ trọng tâm $G$ của tứ diện $ABCD$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_18" value="A"> <b>A.</b> $G(2; 4; 6)$</label><label><input type="radio" name="P1_Cau_18" value="B"> <b>B.</b> $G\left(\dfrac{4}{3}; \dfrac{8}{3}; 4\right)$</label><label><input type="radio" name="P1_Cau_18" value="C"> <b>C.</b> $G\left(1; 2; 3\right)$</label><label><input type="radio" name="P1_Cau_18" value="D"> <b>D.</b> $G(4; 8; 12)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Áp dụng công thức trọng tâm tứ diện: $x_G = \dfrac{2 + 0 + 0 + 2}{4} = 1$; $y_G = \dfrac{0 + 4 + 0 + 4}{4} = 2$; $z_G = \dfrac{0 + 0 + 6 + 6}{4} = 3$.</li></ul> <b>Vậy</b> Tọa độ trọng tâm tứ diện là $G(1; 2; 3)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 19:</b> Trong không gian $Oxyz$, cho hai điểm $A(-2;3;1)$ và $B(5;6;2)$. Đường thẳng $AB$ cắt mặt phẳng $(Oxz)$ tại điểm $M$. Tính tỉ số $\dfrac{AM}{BM}$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_19" value="A"> <b>A.</b> $\dfrac{AM}{BM}=\dfrac{1}{2}$</label><label><input type="radio" name="P1_Cau_19" value="B"> <b>B.</b> $\dfrac{AM}{BM}=2$</label><label><input type="radio" name="P1_Cau_19" value="C"> <b>C.</b> $\dfrac{AM}{BM}=\dfrac{1}{3}$</label><label><input type="radio" name="P1_Cau_19" value="D"> <b>D.</b> $\dfrac{AM}{BM}=3$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Điểm $M\in (Oxz)$ nên $M(x;0;z)$. Khi đó $\overrightarrow{AM}=(x+2;-3;z-1)$ và $\overrightarrow{AB}=(7;3;1)$.</li><li>Vì $A, B, M$ thẳng hàng nên tồn tại $k \in \mathbb{R}$ sao cho: \[
+			\overrightarrow{AM}=k\overrightarrow{AB} \Leftrightarrow \left\{\begin{aligned}
+				&amp;x+2=7k\\
+				&amp;-3=3k\\
+				&amp;z-1=k
+			\end{aligned}\right. \Leftrightarrow \left\{\begin{aligned}
+				&amp;k=-1\\
+				&amp;x=-9\\
+				&amp;z=0
+			\end{aligned}\right. \Rightarrow M(-9;0;0).
+			\]</li><li>Từ đó ta có $\overrightarrow{AM}=(-7;-3;-1)$ và $\overrightarrow{BM}=(-14;-6;-2) = 2\overrightarrow{AM}$, suy ra $BM = 2AM \Rightarrow \dfrac{AM}{BM} = \dfrac{1}{2}$.</li></ul> <b>Vậy</b> Tỉ số $\dfrac{AM}{BM}=\dfrac{1}{2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 20:</b> Trong không gian $Oxyz$, cho ba điểm $A(0;1;-1)$, $B(1;2;0)$, $C(m;n;0)$. Tìm $m$, $n$ sao cho ba điểm $A$, $B$, $C$ thẳng hàng.</div></div><div class="options"><label><input type="radio" name="P1_Cau_20" value="A"> <b>A.</b> $m=1$, $n=1$</label><label><input type="radio" name="P1_Cau_20" value="B"> <b>B.</b> $m=1$, $n=2$</label><label><input type="radio" name="P1_Cau_20" value="C"> <b>C.</b> $m=2$, $n=1$</label><label><input type="radio" name="P1_Cau_20" value="D"> <b>D.</b> $m=2$, $n=2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có $\overrightarrow{AB}=(1;1;1)$ và $\overrightarrow{AC}=(m;n-1;1)$.</li><li>Ba điểm $A, B, C$ thẳng hàng khi và chỉ khi tồn tại số thực $k$ sao cho $\overrightarrow{AC}=k\overrightarrow{AB}$: \[
+			\left\{\begin{aligned}
+				&amp;m = k\cdot 1\\
+				&amp;n-1 = k\cdot 1\\
+				&amp;1 = k\cdot 1
+			\end{aligned}\right. \Leftrightarrow \left\{\begin{aligned}
+				&amp;k=1\\
+				&amp;m=1\\
+				&amp;n=2.
+			\end{aligned}\right.
+			\]</li></ul> <b>Vậy</b> $m=1$ và $n=2$.</div></div></div>
+        <button type="button" class="submit-btn" id="submitBtn" onclick="submitQuiz()">Nộp Bài</button>
+        <button type="button" class="submit-btn" id="viewSolBtn" onclick="showPasswordPrompt()" style="background: #17a2b8;">Xem Đáp Án & Lời Giải</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div id="passwordPrompt">
+        <h4>Mở Khóa Lời Giải</h4>
+        <p style="color: #856404; font-size: 14px; margin-top: 0;">Nhập mật khẩu từ Giáo viên để xem đáp án chi tiết.</p>
+        <input type="password" id="solPassword" placeholder="Nhập mật khẩu...">
+        <button type="button" onclick="checkPassword()">Xem</button>
+    </div>
+
+    <footer class="author-footer">Liên hệ Bùi Thanh Cương - 0915782183</footer>
+
+    <script>
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if ((ua.indexOf("FBAN") === -1) && (ua.indexOf("FBAV") === -1) && (ua.indexOf("Zalo") === -1)) {
+            document.getElementById("zaloWarning").style.display = "none";
+        }
+
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzPUidrlcgeaVgr8JH_fO_nsMO5NjImlwlno03Cl4bG4qrJzIQ2NVZc13r-SVeNPxt3UQ/exec"; 
+        const correctAnswers = {"P1_Cau_1": "D", "P1_Cau_2": "C", "P1_Cau_3": "B", "P1_Cau_4": "B", "P1_Cau_5": "C", "P1_Cau_6": "D", "P1_Cau_7": "B", "P1_Cau_8": "B", "P1_Cau_9": "B", "P1_Cau_10": "B", "P1_Cau_11": "A", "P1_Cau_12": "B", "P1_Cau_13": "C", "P1_Cau_14": "B", "P1_Cau_15": "B", "P1_Cau_16": "A", "P1_Cau_17": "C", "P1_Cau_18": "C", "P1_Cau_19": "A", "P1_Cau_20": "B"};
+        let isSubmitted = false;
+        
+        function moveNext(current, nextId) {
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1 && nextId) document.getElementById(nextId).focus();
+        }
+        function movePrev(e, current, prevId) {
+            if (e.key === "Backspace" && current.value === "" && prevId) document.getElementById(prevId).focus();
+        }
+
+        // =====================================================================
+        // LƯU TRẠNG THÁI (tải lại trang không mất bài, không reset đồng hồ)
+        // Thêm ?reset=1 vào đường dẫn để xóa trạng thái khi giáo viên muốn thử lại.
+        // =====================================================================
+        function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+        const STORE_KEY = 'quizstate:v2:' + location.pathname + '|' + document.title + '|' + hashStr(JSON.stringify(correctAnswers) + '|' + 20);
+        if (/[?&]reset=1(&|$)/.test(location.search)) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} }
+
+        function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+        let state = loadState() || {};
+        function saveState(patch) {
+            Object.assign(state, patch);
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}   // bị chặn lưu (chế độ riêng tư...) thì chạy bằng bộ nhớ tạm
+        }
+        function newId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
+
+        const DURATION_MS = 20 * 60 * 1000;
+        if (!state.endTime) saveState({ endTime: Date.now() + DURATION_MS });
+        if (!state.attemptId) saveState({ attemptId: newId() });
+
+        function formFields() { return Array.from(document.querySelectorAll('#studentName, #studentClass, #quizForm input, #quizForm textarea')); }
+        function collectAnswers() { return formFields().map(el => (el.type === 'radio' || el.type === 'checkbox') ? (el.checked ? 1 : 0) : el.value); }
+        function restoreAnswers(arr) {
+            const f = formFields();
+            if (!Array.isArray(arr) || arr.length !== f.length) return;
+            f.forEach((el, i) => { if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!arr[i]; else el.value = arr[i]; });
+        }
+
+        let saveTimer;
+        function scheduleSave() {
+            if (isSubmitted) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => saveState({ answers: collectAnswers() }), 250);
+        }
+        document.addEventListener('input', scheduleSave);
+        document.addEventListener('change', scheduleSave);
+        window.addEventListener('pagehide', () => { if (!isSubmitted) saveState({ answers: collectAnswers() }); });
+
+        const resDiv = document.getElementById('result');
+        function showResult(html) { resDiv.style.display = 'block'; resDiv.innerHTML = html; }
+        function lockForm() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.querySelectorAll('#quizForm input, #quizForm textarea, #studentName, #studentClass').forEach(el => el.disabled = true);
+        }
+        const scoreSpan = s => `<span style="font-size: 24px; color: red;">${s}</span>`;
+
+        // Gửi kết quả; mất mạng thì giữ lại và tự gửi lại (khi có mạng, hoặc mỗi 15 giây)
+        let sending = false;
+        function sendPayload() {
+            const finalScoreString = state.finalScore;
+            if (!GAS_URL) {
+                saveState({ sent: true });
+                showResult(`Đã chấm xong (chưa cấu hình nơi nhận kết quả).<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+                return;
+            }
+            if (sending) return;
+            sending = true;
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                keepalive: true,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(state.payload)
+            }).then(() => {
+                sending = false;
+                saveState({ sent: true });
+                showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            }).catch(() => {
+                sending = false;
+                showResult(`Đã chấm xong nhưng <b>chưa gửi được</b> kết quả (mạng yếu).<br>Em hãy giữ nguyên trang này, bài sẽ tự gửi lại khi có mạng.<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            });
+        }
+        function retryPending() { if (state.submitted && !state.sent) sendPayload(); }
+        window.addEventListener('online', retryPending);
+        setInterval(retryPending, 15000);
+
+        // Đồng hồ tính theo giờ kết thúc nên không lệch khi tab ở nền hoặc điện thoại khóa màn hình
+        const timerEl = document.getElementById("timer");
+        let timeoutFired = false;
+        const countdown = setInterval(tick, 500);
+        document.addEventListener('visibilitychange', tick);
+        function tick() {
+            if (isSubmitted) { clearInterval(countdown); return; }
+            const remain = Math.ceil((state.endTime - Date.now()) / 1000);
+            if (remain <= 0) {
+                if (timeoutFired) return;
+                timeoutFired = true;
+                clearInterval(countdown);
+                timerEl.innerHTML = "HẾT GIỜ!";
+                alert("Đã hết thời gian làm bài. Hệ thống tự động nộp bài!");
+                submitQuiz(true);
+            } else {
+                const m = Math.floor(remain / 60), s = remain % 60;
+                timerEl.innerHTML = m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+            }
+        }
+
+        // Khôi phục khi mở lại trang
+        restoreAnswers(state.answers);
+        if (state.submitted) {
+            isSubmitted = true;
+            lockForm();
+            timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            if (state.sent) showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(state.finalScore)}`);
+            else { showResult('Đang gửi lại kết quả...'); retryPending(); }
+        } else {
+            tick();
+        }
+
+        function submitQuiz(autoSubmit = false) {
+            if (isSubmitted) return;
+            const name = document.getElementById('studentName').value.trim();
+            const className = document.getElementById('studentClass').value.trim();
+            
+            if (!autoSubmit && (!name || !className)) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp trước khi nộp!");
+                return;
+            }
+
+            isSubmitted = true;
+            if (typeof timerEl !== 'undefined' && timerEl) {
+                timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            }
+            
+            const form = document.getElementById('quizForm');
+            let score = 0;
+            
+            let payload = {
+                'name': name || "Vô danh (Hết giờ)",
+                'className': className || "N/A"
+            };
+
+            for (let i = 1; i <= 20; i++) {
+                const qName = `P1_Cau_${i}`;
+                const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                let ans = selected ? selected.value : "K";
+                const correctVal = correctAnswers[qName];
+                
+                let isCorrect = (selected && selected.value === correctVal);
+                if (isCorrect) score += 0.25;
+                
+                let statusStr = isCorrect ? "Đúng" : (selected ? "Sai" : "K");
+                payload[qName] = `${ans} (${statusStr})`;
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 0; i++) {
+                let correctCount = 0;
+                let questionDetail = [];
+                
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                        let ans = selected ? selected.value : "K";
+                        const correctVal = correctAnswers[qName];
+                        let isSubCorrect = (selected && selected.value === correctVal);
+                        if (isSubCorrect) correctCount++;
+                        
+                        let subStatus = isSubCorrect ? "Đ" : (selected ? "S" : "-");
+                        questionDetail.push(`${l}:${ans}(${subStatus})`);
+                    }
+                });
+                
+                let p2ScoreEarned = 0;
+                if (correctCount === 1) p2ScoreEarned = 0.1;
+                else if (correctCount === 2) p2ScoreEarned = 0.25;
+                else if (correctCount === 3) p2ScoreEarned = 0.5;
+                else if (correctCount === 4) p2ScoreEarned = 1.0;
+                
+                score += p2ScoreEarned;
+                payload[`P2_Cau_${i}`] = `[${correctCount} ý đúng] ${questionDetail.join(' ')}`;
+            }
+
+            for (let i = 1; i <= 0; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box && box.value) ans += box.value;
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    if (isCorrect) score += 0.5;
+                    
+                    let statusStr = isCorrect ? "Đúng" : (studentAns !== "" ? "Sai" : "K");
+                    payload[qName] = `${studentAns || 'Bỏ trống'} (${statusStr})`;
+                }
+            }
+
+            const finalScoreString = `${score.toFixed(2)}/5`;
+            payload['score'] = score.toFixed(2);
+            payload['maxScore'] = '5';
+            payload['attemptId'] = state.attemptId;   // để Apps Script bỏ các lần gửi trùng
+
+            lockForm();
+            saveState({ answers: collectAnswers(), submitted: true, sent: false, payload: payload, finalScore: finalScoreString });
+            showResult('Đã chấm xong, đang gửi kết quả...');
+            sendPayload();
+        }
+
+        function showPasswordPrompt() {
+            document.getElementById('passwordPrompt').style.display = 'block';
+            document.getElementById('viewSolBtn').style.display = 'none';
+            document.getElementById('passwordPrompt').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function checkPassword() {
+            const entered = document.getElementById('solPassword').value;
+            if (entered === "0915782183") {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                revealSolutions();
+            } else {
+                alert("Mật khẩu không chính xác! Vui lòng liên hệ Giáo viên.");
+            }
+        }
+
+        function revealSolutions() {
+            isSubmitted = true;
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            const allInputs = document.querySelectorAll('#quizForm input, #quizForm textarea');
+            allInputs.forEach(input => input.disabled = true);
+
+            const form = document.getElementById('quizForm');
+            
+            for (let i = 1; i <= 20; i++) {
+                const qName = `P1_Cau_${i}`;
+                const correctVal = correctAnswers[qName];
+                const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                allRadios.forEach(radio => {
+                    const lbl = radio.closest('label');
+                    if (radio.value === correctVal) {
+                        lbl.style.backgroundColor = '#d4edda';
+                        lbl.style.borderColor = '#28a745';
+                    } else if (radio.checked) {
+                        lbl.style.backgroundColor = '#f8d7da';
+                        lbl.style.borderColor = '#dc3545';
+                    } else {
+                        lbl.style.opacity = '0.5';
+                    }
+                });
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 0; i++) {
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const correctVal = correctAnswers[qName];
+                        const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                        allRadios.forEach(radio => {
+                            const lbl = radio.closest('label');
+                            if (radio.value === correctVal) {
+                                lbl.style.backgroundColor = '#d4edda';
+                                lbl.style.color = '#155724';
+                            } else if (radio.checked) {
+                                lbl.style.backgroundColor = '#f8d7da';
+                                lbl.style.color = '#721c24';
+                            } else {
+                                lbl.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                });
+            }
+
+            for (let i = 1; i <= 0; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    let boxes = [];
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box) {
+                            boxes.push(box);
+                            if (box.value) ans += box.value;
+                        }
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    boxes.forEach(box => {
+                        if (isCorrect) {
+                            box.style.backgroundColor = '#d4edda';
+                            box.style.borderColor = '#28a745';
+                            box.style.color = '#155724';
+                        } else {
+                            box.style.backgroundColor = '#f8d7da';
+                            box.style.borderColor = '#dc3545';
+                            box.style.color = '#721c24';
+                        }
+                    });
+
+                    const group = document.querySelector(`#${qName}_1`).closest('.options');
+                    let correctDiv = document.createElement('div');
+                    correctDiv.style.marginTop = '10px';
+                    correctDiv.innerHTML = `<span style="color:#28a745; font-weight:bold; font-size:16px;">Đáp án đúng: ${correctAnswers[qName]}</span>`;
+                    group.appendChild(correctDiv);
+                }
+            }
+
+            const solutions = document.querySelectorAll('.solution-box');
+            solutions.forEach(box => box.style.display = 'block');
+
+            // Chuẩn hóa lại SVG vừa hiện ra (lúc này mới đo được kích thước)
+            initMedia();
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise().then(initMedia);
+        }
+
+        const MEDIA_SCOPE = '.question, .solution-box';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive, #tblOverlay')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        // ---- Bảng rộng: gợi ý vuốt ngang, cột đầu cố định, nút xem toàn màn hình ----
+        const __tblRefresh = [];
+        window.addEventListener('resize', () => __tblRefresh.forEach(fn => fn()));
+        function tblState(box, sc) {
+            const over = sc.scrollWidth > sc.clientWidth + 2;
+            box.classList.toggle('has-scroll', over);
+            box.classList.toggle('at-end', !over || sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2);
+        }
+        function enhanceTables() {
+            document.querySelectorAll('.table-responsive, .table-scroll').forEach(sc => {
+                if (sc.dataset.tblDone || sc.closest('#tblOverlay')) return;
+                const table = sc.querySelector('table');
+                if (!table || !sc.parentNode) return;
+                sc.dataset.tblDone = '1';
+                const box = document.createElement('div'); box.className = 'tbl-box';
+                const hint = document.createElement('div'); hint.className = 'tbl-hint';
+                const msg = document.createElement('span'); msg.textContent = '\u2194 Vuốt ngang để xem thêm';
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-open'; btn.textContent = '\u26F6 Xem toàn màn hình';
+                btn.addEventListener('click', e => { e.stopPropagation(); openTableOverlay(table); });
+                hint.append(msg, btn);
+                const wrap = document.createElement('div'); wrap.className = 'tbl-wrap';
+                const fade = document.createElement('div'); fade.className = 'tbl-fade';
+                sc.parentNode.insertBefore(box, sc);
+                box.append(hint, wrap);
+                wrap.append(sc, fade);
+                const first = table.rows[0];
+                if (first && first.cells.length >= 4 && first.cells[0].colSpan === 1 && first.cells[0].rowSpan === 1) table.classList.add('sticky-first');
+                const upd = () => tblState(box, sc);
+                sc.addEventListener('scroll', upd, { passive: true });
+                if (window.ResizeObserver) new ResizeObserver(upd).observe(table);
+                __tblRefresh.push(upd);
+                upd();
+            });
+        }
+        let tblOv = null, tblScale = 1;
+        function closeTableOverlay() {
+            if (!tblOv) return;
+            tblOv.classList.remove('open');
+            document.documentElement.style.overflow = '';
+        }
+        function openTableOverlay(table) {
+            if (!tblOv) {
+                tblOv = document.createElement('div'); tblOv.id = 'tblOverlay';
+                tblOv.innerHTML = '<div class="tbl-ov-bar"><span class="ttl">Kéo để xem; A+ / A\u2212 đổi cỡ chữ</span>'
+                    + '<button type="button" class="zoom-btn" data-a="-">A\u2212</button><button type="button" class="zoom-btn" data-a="+">A+</button>'
+                    + '<button type="button" class="zoom-btn" data-a="x">\u2715 Đóng</button></div><div class="tbl-ov-body"></div>';
+                document.body.appendChild(tblOv);
+                tblOv.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-a]');
+                    if (!b) return;
+                    if (b.dataset.a === 'x') { closeTableOverlay(); return; }
+                    tblScale = Math.min(2.6, Math.max(0.6, tblScale + (b.dataset.a === '+' ? 0.2 : -0.2)));
+                    tblOv.style.setProperty('--tbl-s', tblScale);
+                });
+                window.addEventListener('keydown', e => {                 // đang xem bảng: không để phím chuyển câu / slide
+                    if (!tblOv.classList.contains('open')) return;
+                    e.stopImmediatePropagation();
+                    if (e.key === 'Escape') closeTableOverlay();
+                }, true);
+            }
+            const body = tblOv.querySelector('.tbl-ov-body');
+            body.innerHTML = '';
+            const c = table.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+            c.classList.remove('sticky-first');
+            body.appendChild(c);
+            tblScale = 1;
+            tblOv.style.setProperty('--tbl-s', 1);
+            tblOv.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            body.scrollTo(0, 0);
+        }
+
+        function initMedia() { wrapTables(); enhanceTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+    </script>
+</body>
+</html>
